@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block title %}
+    Table builder 
+{% endblock title %}
+
+{% block content %}
+    <h1>Table bulder</h1>
+    <button id="add-table-button">Add table</button>
+    <div id="builder-wrapper">
+
+        <div id="fields-wrapper" class="dropzone">
+            <!-- <input id="fieldName" type="text">
+            <button id="add-field-button">Add field</button> -->
+            
+        </div>
+
+        <div id="tables-wrapper-builder" >
+            <div id="">
+                
+            </div>
+        </div>
+
+    </div>
+<!-- 
+    <div class="dropzone">
+        <div id="draggable" draggable="true">This div is draggable</div>
+      </div>
+      <div class="dropzone" id="drop-target"></div> -->
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+    var addTableButton = document.getElementById("add-table-button")
+  
+
+    var builderWrapper = document.getElementById("builder-wrapper")
+    var fieldsWrapper = document.getElementById("fields-wrapper")
+
+    var tablesWrapper = document.getElementById("tables-wrapper-builder")
+
+    var dragged = null;
+
+    //list of tables to be randomized 
+    var fieldList = []
+    
+
+    //these will ideally come from a database of pre-normalized tables 
+
+    var tables = [
+        {name:"car_table",fields:[
+        {name:"car_id",type:"INT",FK:false,PK:true},
+        {name:"brand",type:"VARCHAR",FK:false,PK:false},
+        {name:"model",type:"VARCHAR",FK:false,PK:false},
+        {name:"price",type:"INT",FK:false,PK:false}
+        ]},
+        {name:"van_table",fields:[
+        {name:"van_id",type:"INT",FK:false,PK:true},
+        {name:"brand",type:"VARCHAR",FK:false,PK:false},
+        {name:"model",type:"VARCHAR",FK:false,PK:false},
+        {name:"price",type:"INT",FK:false,PK:false}
+        ]},
+        
+    ]
+
+    console.log(tables)
+
+    var tablesFields = []
+
+    //when the page is loaded, it will loop over the tables in the tables list and vreate the
+    // correct number of tables and the fields along side thewm 
+    window.onload = (event)=>{
+
+        let tableNames = []
+
+        for(tbl of tables){
+            console.log(tbl)
+            addTable(tbl.name)
+            tableNames.push(tbl.name)
+            //put the tables into a list for all tables
+            //use the fisher yates algorithm to shuffle them into a random array 
+            
+            tablesFields.push({fields:shuffleFields(tbl.fields),tableName:tbl.name})
+
+            for(fld of tbl.fields){
+                //addField(fld.name,fld.type,tbl.name,fieldsWrapper)
+                //add them to the list of tables 
+                fieldList.push(fld)
+            }
+        }
+
+        //a list for each tables elements 
+
+        //shuffle them here 
+        let shuffledFields = shuffleFields(fieldList)
+
+        //loop through and add the fields but keep the tables above 
+        //console.log("Fields list",fieldList)
+        //console.log("Shuffled fields list",shuffledFields)
+        console.log("Table fields",tablesFields)
+
+        //add them to the fields list after shuffle 
+        for(tbl of tablesFields){
+            for(fld of tbl.fields){
+
+                addField(fld.name,fld.type,tbl.tableName,fieldsWrapper)
+            }
+        }
+        
+    }
+
+    function shuffleFields(list){
+        for(let i = list.length-1; i>0; i--){
+            let j = Math.floor(Math.random() * (i+1))
+            console.log("j = ",j)
+            let swap = list[j]  //store
+            list[j] = list[i]   //copy
+            list[i] = swap      //swap
+            //[list[i], list[j]] = [list[j], list[i]]
+        }
+        return list
+    }
+
+    fieldsWrapper.addEventListener("dragover",(event)=>{
+        event.preventDefault()
+    })
+
+    fieldsWrapper.addEventListener("drop",(event)=>{
+        event.preventDefault()
+        
+        if(event.target.classList.contains("dropzone")){
+            event.target.appendChild(dragged)
+            //remove the correct or wrong class
+            //get the chikldren 
+            let children = event.target.children 
+            for(child of children){
+                if(child.classList.contains("field")){
+
+                    child.classList.remove("wrong-placement")
+                    child.classList.remove("correct-placement")
+                }
+            }
+            
+        }
+
+    })
+
+    //tbales
+    document.getElementById("builder-wrapper").addEventListener("drop",(event) => {
+        event.preventDefault()
+        if(event.target.classList.contains("table")){
+            console.log("Dropped off")
+        }
+    })
+
+    addTableButton.addEventListener('click',function(e){
+        addTable('test')
+    })
+
+
+    function addField(name,type,table,parent,PK = false, fk = false ) {
+
+        let tableWidth = 200
+        let fieldHeight = 50
+        
+
+        let fieldDiv = document.createElement("div")
+        fieldDiv.style.width = tableWidth+"px";
+      //  fieldDiv.style.width = fieldHeight+"px";
+        fieldDiv.className = "field "+table
+        fieldDiv.innerHTML = "<span>" + name + "</span>"
+        fieldDiv.innerHTML += "<span>" + type + "</span>"
+        fieldDiv.setAttribute("draggable","true")
+
+        let tableHeight = fieldDiv.style.height
+
+        fieldDiv.addEventListener("dragstart",function(event){
+
+            dragged = event.target;            
+        })
+
+        fieldDiv.addEventListener("drag", function(event){
+
+        })
+
+        fieldDiv.addEventListener("dragend",function(event){
+           event.preventDefault()
+            console.log("Drag end ",event.target)
+        })
+
+        //cear the text 
+        parent.appendChild(fieldDiv)
+        //builderWrapper.appendChild(fieldDiv)
+    }
+
+    //might need to keep a list of names and stop conflicts 
+    function addTable(tableName) {
+
+        //create the base empty div 
+        let tableDiv = document.createElement("div")
+        //tableDiv.setAttribute("draggable","true")
+        tableDiv.id = tableName
+        tableDiv.className = " table" // this should set all of the styles ?? 
+        
+        //table name 
+        let nameDiv = document.createElement("div")
+        nameDiv.id = tableName + "-name"
+        nameDiv.className = "table-name"
+        nameDiv.innerHTML = tableName
+        nameDiv.style.width = tableDiv.style.width + "px"
+        //drag and drop events
+        
+        tableDiv.addEventListener("dragover",(event)=>{
+            event.preventDefault()
+            //console.log("drag over ",event.target)
+        })
+
+        tableDiv.addEventListener("dragleave",(event)=>{
+            event.preventDefault()
+            //console.log("drag left ",event.target)
+        })
+
+
+        tableDiv.addEventListener("drop",function(event){
+            event.preventDefault()
+            
+            console.log("Dropped",event.target)
+            if(event.target.classList.contains("table")){
+                event.target.appendChild(dragged)
+                
+                //get the chikldren 
+                let children = event.target.children 
+                for(child of children){
+                    if(child.classList.contains("field")){
+
+                        console.log("Child : ",child)
+                        if(child.classList.contains(tableName)){
+                            console.log("Correct placement")
+                            child.classList.add("correct-placement")
+                            child.classList.remove("wrong-placement")
+                        }else{
+                            console.log("Wrong placement")
+                            child.classList.remove("correct-placement")
+                            child.classList.add("wrong-placement")
+
+                        }
+                    }
+                }
+                
+            }
+            
+        })
+
+        tableDiv.appendChild(nameDiv)
+
+        tablesWrapper.append(tableDiv)
+    }
+
+
+
+
+
+</script>
+    
+{% endblock scripts %}

@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% block title %}
+Home
+{% endblock title %}
+
+{% block content %}
+<h1>Create tables here</h1>
+<h2>you wont be murdered THE INTERNET HAS SPOKEN</h2>
+<a href="{{url_for('tabelBulder')}}">Table builder (drag)</a>
+<a href="{{url_for('textBuilder')}}">Table builder text</a>
+<span id="warning"></span>
+
+<div class="table-design-wrapper">
+
+    <input id="tableNameInput" type="text">
+    <button id="addTableButton">Add table</button>
+
+    <br>
+
+    <label for="fieldName">Name: </label>
+    <input id="fieldName" type="text">
+    <label for="fieldType">Type: </label>
+    <input id="fieldType" type="text">
+
+    <div id="tables-wrapper">
+
+    </div>
+
+    <!-- the modals -->
+    <dialog id="add-field-modal">
+        <button autofocus>Close</button>
+        <form>
+
+            <label for="fieldName">Name: </label>
+            <input id="fieldName" type="text">
+            <label for="fieldType">Type: </label>
+            <input id="fieldType" type="text">
+            <button id="addFieldButton"> Add field</button>
+        </form>
+    </dialog>
+
+</div>
+<button id="test">Test</button>
+<button id="save">Save</button>
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+    var addTableButton = document.getElementById("addTableButton")
+
+    var tablesWrapper = document.getElementById("tables-wrapper")
+
+    var addFieldModal = document.getElementById("add-field-modal")
+    var closeAddFieldModal = document.querySelector("dialog button") // might need to be more specific for multiple modals
+
+    var addFieldButton = document.getElementById("addFieldButton")
+
+    let fieldName = document.getElementById("fieldName")
+    let fieldType = document.getElementById("fieldType")
+
+    var tableNameInput = document.getElementById("tableNameInput")
+
+    //list of tables in js dictionary 
+    var tables = []
+
+    addTableButton.addEventListener('click', function (e) {
+        event.preventDefault()
+        console.log("Adding table")
+        let tname = tableNameInput.value
+
+        if (tname == "") {
+            //present error 
+            displayWarning("There must be a table name")
+
+        } else if (tname.length < 4) {
+
+            displayWarning("Table name must have more than 3 characters")
+
+        }else if(tname.includes(" ")){
+
+            displayWarning("Table name must not contain a 'space' character")
+        
+        } else {
+
+            addTable(tname)
+            tableNameInput.value = ""
+            //add to the global list here 
+            let newTable = { name: tname, fields: [] }
+            //add table to list 
+            tables.push(newTable)
+            //debug the tables list state
+            for (tbl of tables) {
+                console.log("Table:", tbl)
+            }
+
+        }
+
+    })
+
+    //might need to keep a list of names and stop conflicts 
+    function addTable(tableName) {
+
+        //create the base empty div 
+        let tableDiv = document.createElement("div")
+        tableDiv.id = tableName + "-table"
+        tableDiv.className = " table" // this should set all of the styles ?? 
+
+        let nameDiv = document.createElement("div")
+        nameDiv.id = tableName + "-name"
+        nameDiv.className = "table-name"
+        nameDiv.innerHTML = tableName
+        nameDiv.style.width = tableDiv.style.width + "px"
+
+        //field name input 
+        let fieldNameInput = document.createElement("input")
+        fieldNameInput.id = "fieldNameInput"
+        fieldNameInput.type = "text"
+        fieldNameInput.placeholder = "Field Name"
+
+        //field type input - select 
+        let fieldTypeInput = document.createElement("select")
+        fieldTypeInput.id = "fieldTypeInput"
+
+        let option1 = document.createElement("option")
+        option1.value = "INT"
+        option1.text = "INT"
+
+        let option2 = document.createElement("option")
+        option2.value = "VARCHAR"
+        option2.text = "VARCHAR"
+
+        let option3 = document.createElement("option")
+        option3.value = "BOOL"
+        option3.text = "BOOL"
+
+        fieldTypeInput.appendChild(option1)
+        fieldTypeInput.appendChild(option2)
+        fieldTypeInput.appendChild(option3)
+
+        //the button to add a field to the table 
+        let addFieldButton = document.createElement("button")
+        addFieldButton.innerHTML = "Add Field"
+        addFieldButton.id = tableName + "-add-field"
+        addFieldButton.className = "add-field"
+
+        //create wrapper for inputs 
+        let inputWrapper = document.createElement("div")
+        inputWrapper.className = "table-inputs-wrapper"
+
+        // the field input elements
+        inputWrapper.appendChild(fieldNameInput)
+        inputWrapper.appendChild(fieldTypeInput)
+        inputWrapper.appendChild(addFieldButton)
+
+        tableDiv.appendChild(inputWrapper)
+        tableDiv.appendChild(nameDiv)
+
+        //add the field info 
+
+        addFieldButton.addEventListener("click", function (e) {
+            event.preventDefault()
+            
+            let name = document.querySelector("#" + tableDiv.id + " #fieldNameInput")
+            let type = document.querySelector("#" + tableDiv.id + " #fieldTypeInput")
+            //let name = document.querySelector("#" + event.target.parentElement.parentElement.id + " #fieldNameInput")
+            //let type = document.querySelector("#" + event.target.parentElement.parentElement.id + " #fieldTypeInput")
+            console.log("parent element input test ", name.value, type.value)
+            //update the state 
+            addField(false, false, name.value, type.value, tableName)
+
+            addFieldUI(tableName)
+        })
+
+        tablesWrapper.append(tableDiv)
+    }
+
+    //creates the field and adds it to the table object in the tables list  
+    function addField(PK = false, FK = false, fieldName, fieldType, tableName) {
+        //create the field object 
+        let fieldObject = {
+            fieldName: fieldName,
+            fieldType: fieldType,
+            PK: PK,
+            FK: FK
+        }
+
+        //add it to the tables field list        
+        for (t of tables) {
+            if (t.name == tableName) {
+                console.log("Field added to ", t.name)
+                //check if PK 
+                t.fields.push(fieldObject)
+            }
+        }
+
+    }
+
+    //build the fields UI from the state of the tables fields 
+    function addFieldUI(tableName) {
+        //find the correct table 
+        let parentTable = document.getElementById(tableName + "-table")
+
+        if (parentTable) {
+            console.log("found parent table : ", parentTable.id)
+
+            //loop over the tables list 
+            for (tbl of tables) {
+                if (tbl.name == tableName) {
+                    if(tbl.fields.length > 0){
+                        console.log("tables fields : ",tbl.fields)
+                    }
+                    console.log("UI 2 table:",tbl)
+                    addFieldToTable(parentTable)
+                }
+            }
+        }
+    }
+
+    function addFieldToTable(parent,PK = false, fk = false ) {
+
+        //get the value from inputs of the parent 
+        let name = document.querySelector("#" + parent.id + " #fieldNameInput")
+        let type = document.querySelector("#" + parent.id + " #fieldTypeInput")
+
+        let fieldDiv = document.createElement("div")
+        fieldDiv.style.width = parent.offsetWidth + "px";
+        fieldDiv.className = "field"
+        fieldDiv.innerHTML = "<span>" + name.value + "</span>"
+        fieldDiv.innerHTML += "<span>" + type.value + "</span>"
+
+        //cear the text 
+        name.value = ""
+        parent.appendChild(fieldDiv)
+    }
+
+    function updateUIFromState() {
+        //loop over the tables list and update the UI 
+
+
+    }
+
+    /**
+    * displays a warning message for "timeOut" amount of milliseconds. timeout default 2000 milliseconds
+    */
+    function displayWarning(message,timeOut = 2000) {
+        let warningText = document.getElementById("warning")
+        warningText.innerText = message
+        setTimeout(() => {
+            warningText.innerText = ""
+        }, timeOut)
+    }
+
+    document.getElementById("test").addEventListener('click',function(e){
+        console.log(tables)
+    })
+
+    //test the save 
+    document.getElementById("save").addEventListener("click",function(e){
+
+        fetch('/save',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify(tables)
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error("Error: ",error))
+
+    })
+
+
+</script>
+{% endblock scripts %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}
+    Text builder 
+{% endblock title %}
+
+{% block content %}
+    <h1>Text bulder</h1>
+    <div id="main-wrapper">
+        
+        <div id="text-tables">
+            
+        </div>
+        <div id="text-wrapper">
+            <textarea name="ddl-area" id="ddl-area"></textarea>
+
+        </div>
+    </div>
+
+{% endblock content %}
+
+{% block scripts %}
+<script>
+
+    var textArea = document.getElementById("ddl-area")
+
+    var tables = []
+
+    textArea.addEventListener("keydown", function(e){
+        //console.log(e)
+        //handle the tab -- this may need to have a case where 
+        //shift + tab escapes the text area so tabbing around is possible for accesability 
+
+        if(e.key == 'Tab'){
+            event.preventDefault()
+            textArea.value += "    "
+        }
+
+        if(e.key == 'Enter'){
+            let values = e.target.value.split('\n')
+            let lastInput = values[values.length-1]
+            if(lastInput != ''){
+                tables.push(lastInput)
+            }else{
+                //this prevents the user from going down the text area by pressing enter
+                //it might not be the desired behavriour though 
+                event.preventDefault()
+            }
+            console.log(tables)
+
+        }
+
+
+    })
+
+</script>
+    
+{% endblock scripts %}

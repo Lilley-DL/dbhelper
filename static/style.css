@@ -1,0 +1,152 @@
+*{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+h1{
+    color: aqua;
+
+}
+
+.table{
+    background-color: rgb(248, 152, 255);
+    border-radius: 10px;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    border: 3px solid black;
+    font-weight: 900;
+    font-size: large;
+
+    box-shadow: 3px 3px black;
+
+}
+
+.field{
+    background-color: hsl(187, 100%, 90%);
+    height: 40px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    border-radius: 5px;
+    
+    border: 3px solid black;
+    font-weight: 900;
+    font-size: large;
+
+    box-shadow: 3px 3px black;
+
+}
+
+#tables-wrapper{
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+}
+
+#fields-wrapper{
+    background-color: rgb(149, 255, 227);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 300px;
+    height: 500px;
+    border-radius: 10px;
+
+    border: 3px solid black;
+    font-weight: 900;
+    font-size: large;
+
+    box-shadow: 3px 3px black;
+
+}
+
+#tables-wrapper-builder{
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.table-name{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 40PX;
+    width: 100%;
+    background-color:  rgb(248, 152, 255);
+    align-items: center;
+
+    border-radius: 10px 10px 0px 0px;
+
+    border-bottom: 3px solid black;
+
+}
+
+.table-inputs-wrapper{
+    display: flex;
+    flex-direction: row;
+    
+}
+
+/* tableBuilder */
+
+#builder-wrapper{
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    justify-content: space-evenly;
+}
+
+
+#draggable {
+    text-align: center;
+    background: white;
+  }
+/*   
+  .dropzone {
+    width: 200px;
+    height: 20px;
+    background: blueviolet;
+    margin: 10px;
+    padding: 10px;
+  } */
+
+  .wrong-placement{
+    background-color: red;
+    color: white;
+  }
+
+  .correct-placement{
+    background-color: lightgreen;
+    
+  }
+
+  /* TEXT BUILDER */
+
+  #main-wrapper{
+    display: flex;
+    flex-direction: row;
+    height: 80vh;
+    width: 100%;
+  }
+
+  #text-tables{
+    width: 70%;
+    background-color: rgb(216, 255, 242);
+  }
+
+  #text-wrapper{
+    background-color: rgb(243, 230, 255);
+    width: 30%;
+    padding: 10px;
+  }
+
+  #ddl-area{
+    width: 100%;
+    height: 80%;
+  }

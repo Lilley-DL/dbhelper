@@ -1,0 +1,16 @@
+{% block title %}
+    Saved
+{% endblock title %}
+
+{% block content %}
+    <div>
+        <h1>Saved content</h1>
+        {% if saved_tables %}
+            {% for table in saved_tables %}
+                {{table}}
+                
+            {% endfor %}
+            
+        {% endif %}
+    </div>
+{% endblock content %}
