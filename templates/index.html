@@ -11,15 +11,11 @@ DB helper
 
 <div class="table-design-wrapper">
 
+    <label for="tableName">Table name:</label>
     <input id="tableNameInput" type="text">
     <button id="addTableButton">Add table</button>
 
     <br>
-
-    <label for="fieldName">Name: </label>
-    <input id="fieldName" type="text">
-    <label for="fieldType">Type: </label>
-    <input id="fieldType" type="text">
 
     <div id="tables-wrapper">
 
@@ -39,8 +35,8 @@ DB helper
     </dialog>
 
 </div>
-<button id="test">Test</button>
-<button id="save">Save</button>
+<!-- <button id="test">Test</button>
+<button id="save">Save</button> -->
 {% endblock content %}
 
 
@@ -223,8 +219,8 @@ DB helper
         let type = document.querySelector("#" + parent.id + " #fieldTypeInput")
 
         let fieldDiv = document.createElement("div")
-        fieldDiv.style.width = parent.offsetWidth + "px";
-        fieldDiv.className = "field"
+        fieldDiv.style.width = parent.offsetWidth - 6 + "px";
+        fieldDiv.className = "field2"
         fieldDiv.innerHTML = "<span>" + name.value + "</span>"
         fieldDiv.innerHTML += "<span>" + type.value + "</span>"
 
