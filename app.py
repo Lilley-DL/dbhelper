@@ -13,7 +13,6 @@ def get_db_connection():
     return conn
 
 
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -29,10 +28,22 @@ def save():
         for item in data:
             csv_data.append(item.values()) 
 
-        with open('fileSavetyest.csv','w',newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(data[0].keys())
-            writer.writerows(csv_data)
+        json_data = json.dumps(processed)
+        app.logger.info(json_data)
+
+        #save to the databse 
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("INSERT INTO db_tables (table_data) VALUES (%s)",(json_data,))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # with open('fileSavetyest.csv','w',newline='') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(data[0].keys())
+        #     writer.writerows(csv_data)
 
         app.logger.info(processed)
         return jsonify(processed)
