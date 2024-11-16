@@ -68,4 +68,8 @@ def tabelBulder():
 @app.route("/textBuilder")
 def textBuilder():
     return render_template('textBuilder.html')
+
+##for render to run 
+if __name__ == "__main__":
+    app.run()
     
