@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+DB helper
+{% endblock title %}
+
+{% block content %}
+{% for row in info %}
+    
+    {{row[0]}}
+{% endfor %}
+{% endblock content %}

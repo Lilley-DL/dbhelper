@@ -11,6 +11,8 @@ def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL)
     return conn
 
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -64,6 +66,17 @@ def tableView():
 
     # return render_template("saved.html")
 
+#testing the db conncetion 
+@app.route("/testing")
+def testingDB():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM  db_tables")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return render_template("testdb.html",info=rows)
 
 @app.route("/quizzes")
 def quizzesLanding():
