@@ -1,7 +1,15 @@
 from flask import Flask,render_template,url_for,request,jsonify
-import csv , json
+import csv , json, os
+import psycopg2
 
 app = Flask(__name__)
+
+#database thingssssss
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+def get_db_connection():
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
 
 @app.route("/")
 def index():
