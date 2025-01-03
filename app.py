@@ -41,8 +41,9 @@ def save():
 
         json_data = json.dumps(processed)
         app.logger.info(json_data)
-
-        insertTableData(json_data)
+        
+        #Removed for now. need to set up a new DB for it
+        #insertTableData(json_data)
 
         app.logger.info(processed)
         return jsonify(processed)

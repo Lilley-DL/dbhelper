@@ -5,7 +5,8 @@ DB helper
 
 {% block content %}
 <h1>Create tables here</h1>
-
+<button id="test">Test</button> 
+<button id="save">Save</button>
 
 <span id="warning"></span>
 
@@ -35,8 +36,7 @@ DB helper
     </dialog>
 
 </div>
-<button id="test">Test</button> 
-<button id="save">Save</button>
+
 {% endblock content %}
 
 
@@ -107,6 +107,12 @@ DB helper
         nameDiv.innerHTML = tableName
         nameDiv.style.width = tableDiv.style.width + "px"
 
+        //PK 
+        let pkInput = document.createElement("input")
+        pkInput.id = "pkInput"
+        pkInput.type = "checkbox"
+        pkInput.checked = false
+
         //field name input 
         let fieldNameInput = document.createElement("input")
         fieldNameInput.id = "fieldNameInput"
@@ -144,6 +150,7 @@ DB helper
         inputWrapper.className = "table-inputs-wrapper"
 
         // the field input elements
+        inputWrapper.appendChild(pkInput)
         inputWrapper.appendChild(fieldNameInput)
         inputWrapper.appendChild(fieldTypeInput)
         inputWrapper.appendChild(addFieldButton)
@@ -158,11 +165,13 @@ DB helper
             
             let name = document.querySelector("#" + tableDiv.id + " #fieldNameInput")
             let type = document.querySelector("#" + tableDiv.id + " #fieldTypeInput")
-            //let name = document.querySelector("#" + event.target.parentElement.parentElement.id + " #fieldNameInput")
-            //let type = document.querySelector("#" + event.target.parentElement.parentElement.id + " #fieldTypeInput")
+            let pk = document.querySelector("#" + tableDiv.id + " #pkInput")
+
             console.log("parent element input test ", name.value, type.value)
+            console.log("Primary key = ", pk.checked)
+
             //update the state 
-            addField(false, false, name.value, type.value, tableName)
+            addField(pk.checked, false, name.value, type.value, tableName)
 
             addFieldUI(tableName)
         })
@@ -211,7 +220,7 @@ DB helper
             }
         }
     }
-
+    //UI
     function addFieldToTable(parent,PK = false, fk = false ) {
 
         //get the value from inputs of the parent 
@@ -247,7 +256,10 @@ DB helper
     }
 
     document.getElementById("test").addEventListener('click',function(e){
-        console.log(tables)
+        console.log(`Tables = ${tables}`)
+        for(tbl of tables){
+            console.log("Tbl = ",tbl)
+        }
     })
 
     //test the save 

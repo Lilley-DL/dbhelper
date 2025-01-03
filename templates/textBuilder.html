@@ -8,6 +8,18 @@
     <div id="main-wrapper">
         
         <div id="text-tables">
+
+        <div id="builder-wrapper">
+
+            <div id="fields-wrapper" class="dropzone"> 
+            </div>
+            <div id="tables-wrapper-builder" >
+                <div id="">
+                    
+                </div>
+            </div>
+
+        </div>
             
         </div>
         <div id="text-wrapper">
@@ -24,6 +36,7 @@
     var textArea = document.getElementById("ddl-area")
 
     var tables = []
+    var fields = []
 
     textArea.addEventListener("keydown", function(e){
         //console.log(e)
@@ -32,25 +45,74 @@
 
         if(e.key == 'Tab'){
             event.preventDefault()
-            textArea.value += "    "
+            let input = e.target;
+              // Get the current cursor position
+            var startPos = input.selectionStart;
+            var endPos = input.selectionEnd;
+            // Insert the character at the cursor position
+            input.value = input.value.substring(0, startPos) + "    " + input.value.substring(endPos);
+
+            // Set the cursor position after the inserted character
+            input.selectionStart = startPos + 4;
+            input.selectionEnd = startPos + 4;
+            //textArea.value += "    "
         }
 
         if(e.key == 'Enter'){
             let values = e.target.value.split('\n')
-            let lastInput = values[values.length-1]
+            let lastInput = values[values.length-1] 
+            console.log("Last input = ",lastInput)
+
+            if (lastInput == '\n'){
+                console.log("NEWLINE")
+            }
+
             if(lastInput != ''){
-                tables.push(lastInput)
+                //tables.push(lastInput.trim())
             }else{
                 //this prevents the user from going down the text area by pressing enter
                 //it might not be the desired behavriour though 
-                event.preventDefault()
+                //event.preventDefault()
             }
-            console.log(tables)
+            //console.log(tables)
+
+            parseTables(e.target.value)
 
         }
 
 
     })
+
+    function parseTables(data){
+        //reset them as the data is parsed every time 
+        tables = []
+        fields = []
+        let values = data.split("\n")
+
+        for(val of values){
+            //console.log("VALUE = ",val)
+            if(val != ''){
+                if(val[0] == " ",val[1] == " ",val[2] == " ",val[3] == " "){
+                    //field of the last thing added to the tables array 
+              //      console.log("FIELD")
+                    //check the length of the tables array 
+                    let tablesCount = tables.length
+                    if(tablesCount > 0){
+                        console.log(tables[tablesCount])
+                    }
+                    fields.push(val.trim())
+                }else{
+                    //if no spaces then its a table
+                //    console.log("TABLE")
+                    tables.push(val.trim())
+                }
+            }
+        }
+
+        console.log("Values parsed :: ",values)
+        console.log("Tables parsed :: ",tables)
+        console.log("Fields parsed :: ",fields)
+    }
 
 </script>
     

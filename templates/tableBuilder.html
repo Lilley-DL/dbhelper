@@ -49,70 +49,113 @@
 
     var tables = [
         {name:"car_table",fields:[
-        {name:"car_id",type:"INT",FK:false,PK:true},
-        {name:"brand",type:"VARCHAR",FK:false,PK:false},
-        {name:"model",type:"VARCHAR",FK:false,PK:false},
-        {name:"price",type:"INT",FK:false,PK:false}
+            {name:"car_id",type:"INT",FK:false,PK:true,shared:false},
+            {name:"brand",type:"VARCHAR",FK:false,PK:false,shared:true},
+            {name:"model",type:"VARCHAR",FK:false,PK:false,shared:true},
+            {name:"price",type:"INT",FK:false,PK:false,shared:true}
         ]},
         {name:"van_table",fields:[
-        {name:"van_id",type:"INT",FK:false,PK:true},
-        {name:"brand",type:"VARCHAR",FK:false,PK:false},
-        {name:"model",type:"VARCHAR",FK:false,PK:false},
-        {name:"price",type:"INT",FK:false,PK:false}
+            {name:"van_id",type:"INT",FK:false,PK:true,shared:false},
+            {name:"brand",type:"VARCHAR",FK:false,PK:false,shared:true},
+            {name:"model",type:"VARCHAR",FK:false,PK:false,shared:true},
+            {name:"price",type:"INT",FK:false,PK:false,shared:true}
         ]},
-        
     ]
 
-    console.log(tables)
+    var educationDb = {
+        "shared_attributes":{
+            "email":{
+                "applicable_tables":["student_table","instructor_table"]
+            }
+        },
+        "tables":[
+            {
+                "name": "student_table",
+                "fields": [
+                    {"name": "student_id", "type": "INT", "FK": false, "PK": true, "shared": false},
+                    {"name": "first_name", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "last_name", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "email", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "enrollment_date", "type": "DATE", "FK": false, "PK": false, "shared": false}
+                ]
+            },
+            {
+                "name": "course_table",
+                "fields": [
+                    {"name": "course_id", "type": "INT", "FK": false, "PK": true, "shared": false},
+                    {"name": "course_name", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "credits", "type": "INT", "FK": false, "PK": false, "shared": false},
+                    {"name": "department", "type": "VARCHAR", "FK": false, "PK": false, "shared": false}
+                ]
+            },
+            {
+                "name": "enrollment_table",
+                "fields": [
+                    {"name": "enrollment_id", "type": "INT", "FK": false, "PK": true, "shared": false},
+                    {"name": "student_id", "type": "INT", "FK": true, "PK": false, "shared": false},
+                    {"name": "course_id", "type": "INT", "FK": true, "PK": false, "shared": false},
+                    {"name": "grade", "type": "CHAR", "FK": false, "PK": false, "shared": false},
+                    {"name": "enrolled_date", "type": "DATE", "FK": false, "PK": false, "shared": false}
+                ]
+            },
+            {
+                "name": "instructor_table",
+                "fields": [
+                    {"name": "instructor_id", "type": "INT", "FK": false, "PK": true, "shared": false},
+                    {"name": "first_name", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "last_name", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "email", "type": "VARCHAR", "FK": false, "PK": false, "shared": true},
+                    {"name": "specialization", "type": "VARCHAR", "FK": false, "PK": false, "shared": false}
+                ]
+            }
+        ]
+    }
+
+    var sharedAttributes = null
 
     var tablesFields = []
 
-    //when the page is loaded, it will loop over the tables in the tables list and vreate the
-    // correct number of tables and the fields along side thewm 
-    window.onload = (event)=>{
-
+    function loadSchema(schema){
         let tableNames = []
 
-        for(tbl of tables){
+        for(tbl of schema.tables){
             console.log(tbl)
             addTable(tbl.name)
             tableNames.push(tbl.name)
             //put the tables into a list for all tables
             //use the fisher yates algorithm to shuffle them into a random array 
-            
             tablesFields.push({fields:shuffleFields(tbl.fields),tableName:tbl.name})
 
-            for(fld of tbl.fields){
-                //addField(fld.name,fld.type,tbl.name,fieldsWrapper)
+            for(fld of tbl.fields){  //REDUNDENT
                 //add them to the list of tables 
                 fieldList.push(fld)
             }
         }
-
-        //a list for each tables elements 
-
         //shuffle them here 
-        let shuffledFields = shuffleFields(fieldList)
-
-        //loop through and add the fields but keep the tables above 
-        //console.log("Fields list",fieldList)
-        //console.log("Shuffled fields list",shuffledFields)
-        console.log("Table fields",tablesFields)
-
+        let shuffledFields = shuffleFields(fieldList)  //REDUNDENT
         //add them to the fields list after shuffle 
         for(tbl of tablesFields){
             for(fld of tbl.fields){
-
-                addField(fld.name,fld.type,tbl.tableName,fieldsWrapper)
+              
+                addField(fld.name,fld.type,tbl.tableName,fieldsWrapper,fld.shared)
             }
         }
-        
+        //set global shared attributes 
+        sharedAttributes = schema.shared_attributes
+        console.log("SHARED ATTRIBUTES = ", sharedAttributes)
+    }
+
+    //when the page is loaded, it will loop over the tables in the tables list and vreate the
+    // correct number of tables and the fields along side thewm 
+    window.onload = (event)=>{
+        //loadSchema(tables)        
+        loadSchema(educationDb)        
     }
 
     function shuffleFields(list){
         for(let i = list.length-1; i>0; i--){
             let j = Math.floor(Math.random() * (i+1))
-            console.log("j = ",j)
+           // console.log("j = ",j)
             let swap = list[j]  //store
             list[j] = list[i]   //copy
             list[i] = swap      //swap
@@ -154,22 +197,25 @@
     })
 
     addTableButton.addEventListener('click',function(e){
-        addTable('test')
+        //addTable('test')
     })
 
 
-    function addField(name,type,table,parent,PK = false, fk = false ) {
+    function addField(name,type,table,parent,shared,PK = false, fk = false) {
 
-        let tableWidth = 200
+        let fieldWidth = 300
         let fieldHeight = 50
         
 
         let fieldDiv = document.createElement("div")
-        fieldDiv.style.width = tableWidth+"px";
+        fieldDiv.style.width = fieldWidth+"px";
       //  fieldDiv.style.width = fieldHeight+"px";
         fieldDiv.className = "field "+table
         fieldDiv.innerHTML = "<span>" + name + "</span>"
         fieldDiv.innerHTML += "<span>" + type + "</span>"
+        //fieldDiv.setAttribute('data-shared',shared)
+        fieldDiv.dataset.isShared = shared
+        fieldDiv.dataset.attribute = name
         fieldDiv.setAttribute("draggable","true")
 
         let tableHeight = fieldDiv.style.height
@@ -200,7 +246,7 @@
         let tableDiv = document.createElement("div")
         //tableDiv.setAttribute("draggable","true")
         tableDiv.id = tableName
-        tableDiv.className = " table" // this should set all of the styles ?? 
+        tableDiv.className = "drag-and-drop-table table" // this should set all of the styles ?? 
         
         //table name 
         let nameDiv = document.createElement("div")
@@ -223,22 +269,44 @@
 
         tableDiv.addEventListener("drop",function(event){
             event.preventDefault()
-            
-            console.log("Dropped",event.target)
             if(event.target.classList.contains("table")){
                 event.target.appendChild(dragged)
                 
-                //get the chikldren 
+                //get the children 
                 let children = event.target.children 
                 for(child of children){
                     if(child.classList.contains("field")){
 
-                        console.log("Child : ",child)
+                        //console.log("Child dat set : ",child.dataset)
+                        //does the childs class list contain its defined table name
                         if(child.classList.contains(tableName)){
                             console.log("Correct placement")
                             child.classList.add("correct-placement")
                             child.classList.remove("wrong-placement")
-                        }else{
+                        }else if(child.dataset.isShared == "true"){
+                            //check against the shared elements list 
+                            //get the attribute 
+                            let attribute = child.dataset.attribute
+                            console.log("child attribute = ",attribute)
+                            //check against the global for the tablename 
+                            if(sharedAttributes[attribute]){
+                                console.log("TABLE NAME ",tableName)
+                                if(sharedAttributes[attribute].applicable_tables.includes(tableName)){
+                                    console.log("CAN BE PLACED")
+                                    child.classList.add("correct-placement")
+                                    child.classList.remove("wrong-placement")
+                                }else{
+                                    console.log("CAN NOT BE PLACED")
+                                    console.log("Wrong placement")
+                                    child.classList.remove("correct-placement")
+                                    child.classList.add("wrong-placement")
+
+                                }
+                            }
+                            //child.classList.add("correct-placement")
+                            //child.classList.remove("wrong-placement")
+                        }
+                        else{
                             console.log("Wrong placement")
                             child.classList.remove("correct-placement")
                             child.classList.add("wrong-placement")

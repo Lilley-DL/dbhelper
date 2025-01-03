@@ -12,7 +12,7 @@ h1{
     background-color: rgb(248, 152, 255);
     border-radius: 10px;
     width: 300px;
-    height: 300px;
+    /* height: 300px; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -22,7 +22,11 @@ h1{
     font-size: large;
 
     box-shadow: 3px 3px black;
+}
 
+.drag-and-drop-table{
+  min-height: 100px;
+  padding-bottom: 20px;
 }
 
 .field{
@@ -40,7 +44,10 @@ h1{
     font-size: large;
 
     box-shadow: 3px 3px black;
-
+  
+}
+.field-dropped{
+  margin: 0;
 }
 
 .field2{
@@ -68,11 +75,14 @@ h1{
 #fields-wrapper{
     background-color: rgb(149, 255, 227);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-evenly;
     align-items: center;
-    width: 300px;
-    height: 500px;
+    width: 60%; 
+    max-width: 60vw;
+    min-height:50vw;
+    max-height: 100%;
     border-radius: 10px;
 
     border: 3px solid black;
@@ -81,12 +91,14 @@ h1{
 
     box-shadow: 3px 3px black;
 
+    
 }
 
 #tables-wrapper-builder{
     display: flex;
     flex-direction: column;
     gap: 25px;
+    width: 50%;
 }
 
 .table-name{
@@ -115,9 +127,10 @@ h1{
 #builder-wrapper{
     display: flex;
     flex-direction: row;
-    width: 100vw;
+    /* width: 100vw; */
     justify-content: space-evenly;
-}
+    gap: 50px;
+  }
 
 
 #draggable {
