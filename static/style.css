@@ -107,11 +107,10 @@ h1{
     justify-content: center;
     height: 40PX;
     width: 100%;
-    background-color:  rgb(248, 152, 255);
+    /* background-color:  rgb(248, 152, 255); */
     align-items: center;
 
     border-radius: 10px 10px 0px 0px;
-
     border-bottom: 3px solid black;
 
 }
@@ -194,4 +193,103 @@ h1{
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+  }
+
+  #quiz-area{
+    display: flex;
+    flex-direction: row;
+  }
+
+
+  /* QIUIZZES PAGES    */
+  #attributes-wrapper{
+    width: 50%;
+  }
+  #attributes{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-left: 2vw;
+    /* padding-right: 5vw; */
+
+  }
+
+  #attributes div{
+    background-color: #f296bf;
+    padding: 10px;
+    border-radius: 10px;
+
+    min-width: 10rem;
+    
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  .attrName{
+    /* text-decoration: underline; */
+    font-weight: bold;
+    font-size: larger;
+  }
+
+  .attrType{
+    /* text-decoration: underline; */
+    font-size: large;
+  }
+
+  .quiz-table{
+    background-color: rgb(248, 152, 255);
+    border-radius: 10px;
+    width: 250px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: large;
+    border-radius: 10px 10px 0px 0px;
+  }
+
+  #tables-wrapper{
+    margin-top: 50px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .selected-table{
+    background-color: #e85195;
+  }
+
+  .selected-attribute{
+    background-color: #e85195;
+  }
+
+  .correct-attribute{
+    background-color: #8df89f;
+  }
+
+  .incorrect-attribute{
+    background-color: #f8df8d;
+  }
+  
+  .field-wrapper{
+    width: 100%;
+    font-size: large;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .field-wrapper :first-child{
+    padding-left: 10px;
+  }
+
+  .primary-key{
+    background-color: #be9c2b;
+  }
+
+  #pk-image{
+    width: 60px;
+    /* align-self: flex-start; */
   }

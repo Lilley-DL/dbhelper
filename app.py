@@ -75,8 +75,13 @@ def tableView():
     else:
         return render_template('saved.html')
 
+@app.route("/quizzes")
+def quizzesLanding():
+    return render_template("quizzes.html")
 
-    # return render_template("saved.html")
+@app.route("/quiz")
+def viewQuiz(): #add the specific route based on quiz id 
+    return render_template("quiz.html")
 
 #testing the db conncetion 
 @app.route("/testing")
@@ -90,9 +95,6 @@ def testingDB():
 
     return render_template("testdb.html",info=rows)
 
-@app.route("/quizzes")
-def quizzesLanding():
-    return render_template('quizzesLanding.html')
 
 @app.route("/builder")
 def tabelBulder():

@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% block title %}
+DB helper - quiz name
+{% endblock title %}
+
+{% block content %}
+<h1>Quiz name</h1>
+<div id="scenario-wrapper">
+    <h2>Scenario</h2>
+    <h3 id="scenario-title"></h3>
+    <span id="scenario"></span>
+</div>
+
+<div id="quiz-area">
+
+    <div id="attributes-wrapper">
+        <h3>attributes / fields</h3>
+        <div id="attributes">
+            
+        </div>
+    </div>
+    <div id="tables-wrapper">
+</div>
+
+
+</div>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+
+    var attributesWrapper = document.getElementById("attributes")
+    var tablesWrapper = document.getElementById("tables-wrapper")
+
+    var title = document.getElementById("scenario-title")
+    var scenario = document.getElementById("scenario")
+
+    var selectedTable = null
+
+    var selectedDisplay = document.getElementById("selected-table")
+
+    var testObject = {
+        "title": "Online Bookstore",
+        "description": "Design a database for an online bookstore that keeps track of books, authors, customers, and orders.",
+        "tables": [
+            {
+                "id": "table_001",
+                "name": "Books",
+                "description": "Stores information about books available in the bookstore.",
+                "attributes": [
+                    {
+                        "id": "attr_001",
+                        "name": "book_id",
+                        "type": "INTEGER",
+                        "description": "Unique identifier for a book.",
+                        "tips": "This attribute is specific to the Books table because it identifies individual books. It doesn't belong in tables like Customers or Orders because they don't track book specifics directly."
+                    },
+                    {
+                        "id": "attr_002",
+                        "name": "title",
+                        "type": "VARCHAR(255)",
+                        "description": "Title of the book.",
+                        "tips": "Titles belong to the Books table as they describe the books themselves, not the authors or customers."
+                    },
+                    {
+                        "id": "attr_003",
+                        "name": "author_id",
+                        "type": "INTEGER",
+                        "description": "References the author of the book.",
+                        "tips": "Author IDs are relevant to the Books table to link books to their authors but have no place in the Customers or Orders tables."
+                    },
+                    {
+                        "id": "attr_004",
+                        "name": "price",
+                        "type": "DECIMAL(10,2)",
+                        "description": "Price of the book.",
+                        "tips": "Price is specific to books and should not be placed in tables like Authors or Customers as it does not describe them."
+                    }
+                ]
+            },
+            {
+                "id": "table_002",
+                "name": "Authors",
+                "description": "Stores information about authors who have written books.",
+                "attributes": [
+                    {
+                        "id": "attr_005",
+                        "name": "author_id",
+                        "type": "INTEGER",
+                        "description": "Unique identifier for an author.",
+                        "tips": "The Authors table tracks author details, so this attribute doesn’t fit in Books directly but is linked via a foreign key."
+                    },
+                    {
+                        "id": "attr_006",
+                        "name": "name",
+                        "type": "VARCHAR(255)",
+                        "description": "Name of the author.",
+                        "tips": "Author names belong in the Authors table and not in Customers or Orders because they describe book creators, not customers or transactions."
+                    },
+                    {
+                        "id": "attr_007",
+                        "name": "bio",
+                        "type": "TEXT",
+                        "description": "Short biography of the author.",
+                        "tips": "Biographies provide information about authors and are irrelevant in tables like Books or Customers."
+                    }
+                ]
+            },
+            {
+                "id": "table_003",
+                "name": "Customers",
+                "description": "Stores information about customers.",
+                "attributes": [
+                    {
+                        "id": "attr_008",
+                        "name": "customer_id",
+                        "type": "INTEGER",
+                        "description": "Unique identifier for a customer.",
+                        "tips": "The Customers table tracks individual library members, so this attribute doesn’t belong in Books or Authors tables."
+                    },
+                    {
+                        "id": "attr_009",
+                        "name": "name",
+                        "type": "VARCHAR(255)",
+                        "description": "Name of the customer.",
+                        "tips": "Names of customers belong in the Customers table. Placing them in the Books or Authors tables would confuse member data with book or author data."
+                    },
+                    {
+                        "id": "attr_010",
+                        "name": "email",
+                        "type": "VARCHAR(255)",
+                        "description": "Email address of the customer.",
+                        "tips": "Emails are only needed to contact customers. They do not belong in tables like Books or Authors because they do not describe books or authors."
+                    }
+                ]
+            }
+        ]
+    }
+
+    var buildSchema = {
+        tables:[]
+    }
+
+    var unshuffledAttributes = []
+    var tables = []
+
+    window.onload = (event) =>{
+
+        //load title 
+        title.innerText = testObject.title
+        //load scenario 
+        scenario.innerText = testObject.description
+
+        for(var tbl of testObject.tables){
+            tables.push(tbl)
+            loadTable(tbl)
+            console.log("Table = ",tbl.attributes)
+            for(var attr of tbl.attributes){
+                unshuffledAttributes.push(attr)
+            }
+        }
+
+        //shuffle attributes
+        var shuffled = shuffleFields(unshuffledAttributes)
+        //console.log("SHUFFLED = ",shuffled)
+        //load them onto UI 
+        for(var attr of shuffled){
+            loadAttribute(attr)
+        }
+
+        console.log("TABLES = ",tables)
+    }
+
+    function loadAttribute(attribute){
+        //create the elemetn 
+        var attributeWrapper = document.createElement("div")
+        //name
+        var attrName = document.createElement("span")
+        attrName.innerHTML = "Name: " + "<span class='attrName'>"+ attribute.name+"</span>"
+        //type
+        var attrType = document.createElement("span")
+        attrType.innerHTML = "Type: "+"<span class='attrType'>"+ attribute.type+"</span>"
+        //set hint / description
+        attributeWrapper.title = attribute.description
+        attributeWrapper.id = attribute.id
+
+        attributeWrapper.addEventListener("click",(event)=>{
+            let parentID = event.currentTarget.parentElement.id
+            //get selected table 
+            if(selectedTable){
+                document.getElementById(selectedTable.id).appendChild
+                addAttribute(attribute,selectedTable)
+            }
+        })
+
+        //wrap them in attribute wrapper 
+        attributeWrapper.appendChild(attrName)
+        attributeWrapper.appendChild(attrType)
+
+        attributesWrapper.appendChild(attributeWrapper)
+    }
+
+    function addAttribute(attribute,table){
+
+        //find the table from id of the table 
+        var uiTable = document.getElementById(table.id)
+
+        var tableChildren = uiTable.children
+        var duplicate = false
+
+        for(let child of tableChildren){
+            if(child.id == attribute.id){
+                duplicate = true
+                break
+            }
+        }
+
+        if(!duplicate){
+            let correctCoice = false
+            //check for attribute in the table
+            for(let attr of table.attributes){
+                if(attr == attribute){
+                    correctCoice = true
+                }
+            }
+
+            let removeButton = document.createElement("button")
+            removeButton.innerText = "X"
+
+            //create div for attribute 
+            let fieldDiv = document.createElement("div")
+            fieldDiv.style.width = parent.offsetWidth - 6 + "px";
+            fieldDiv.id = attribute.id
+            fieldDiv.innerHTML = "<span class='attr-name'>" + attribute.name + "</span>"
+            fieldDiv.innerHTML += "<span> " + attribute.type + "</span>"
+            fieldDiv.classList.add("field-wrapper")
+
+            if(correctCoice){
+                fieldDiv.classList.add("correct-attribute")
+            }else{
+                fieldDiv.classList.add("incorrect-attribute")
+                //add the hover (title attribute)
+                fieldDiv.title = attribute.tips
+            }
+
+            fieldDiv.appendChild(removeButton)
+
+            removeButton.addEventListener("click", (event) => {
+                //console.log("Remove button event ",event.target.parentElement)
+                //console.log("Remove parent div",event.target.parentElement.parentElement)
+                parenDiv = event.target.parentElement.parentElement
+                parenDiv.removeChild(event.target.parentElement)
+            })
+            
+            //add it to the table ui
+            uiTable.appendChild(fieldDiv)
+        }
+
+    }
+
+    function loadTable(table){
+
+        var tableWrapper = document.createElement("div")
+        tableWrapper.id = table.id
+        tableWrapper.className = "quiz-table"
+
+        //table name 
+        let nameDiv = document.createElement("div")
+        nameDiv.id = table.name + "-name"
+        nameDiv.className = "table-name"
+        nameDiv.innerHTML = table.name
+        nameDiv.style.width = tableWrapper.style.width + "px"
+
+        tableWrapper.addEventListener("click",(event)=>{
+            selectedTable = table
+            highlightTable(selectedTable)
+        })
+
+        //
+        tableWrapper.appendChild(nameDiv)
+        tablesWrapper.appendChild(tableWrapper)
+
+    }
+
+    function shuffleFields(list){
+        for(let i = list.length-1; i>0; i--){
+            let j = Math.floor(Math.random() * (i+1))
+           // console.log("j = ",j)
+            let swap = list[j]  //store
+            list[j] = list[i]   //copy
+            list[i] = swap      //swap
+            //[list[i], list[j]] = [list[j], list[i]]
+        }
+        return list
+    }
+
+    function tableSelected(tbl1,tbl2){
+        if(tbl1.id == tbl2.id){
+            return true
+        }
+        return false
+    }
+
+    function highlightTable(selected){
+        var tableDivs = document.getElementsByClassName("quiz-table")
+        //clear all other highlighted tables 
+        for(let element of tableDivs){
+            element.classList.remove("selected-table")
+        }
+        
+        //loop and set the one with the correct id 
+        for(let element of tableDivs){
+            if(element.id == selected.id){
+                element.classList.add("selected-table")
+            }
+        }
+
+    }
+
+</script>
+
+{% endblock scripts %}
