@@ -5,6 +5,7 @@ DB helper
 
 {% block content %}
 <h1>Create tables here</h1>
+<h3>User Code: {{current_user.userCode}}</h3>
 <button id="test">Test</button> 
 <button id="save">Save</button>
 
@@ -56,12 +57,19 @@ DB helper
 
     var tableNameInput = document.getElementById("tableNameInput")
 
+    var testButton = document.getElementById("test")
+
+
     //list of tables in js dictionary 
     var tables = []
 
-    addTableButton.addEventListener('click', function (e) {
+    testButton.addEventListener("click",function(event){
+        console.log("TABLES STATE ",tables)
+        updateUIFromState()
+    })
+
+    addTableButton.addEventListener('click', function(e) {
         event.preventDefault()
-        console.log("Adding table")
         let tname = tableNameInput.value
 
         if (tname == "") {
@@ -78,17 +86,17 @@ DB helper
         
         } else {
 
-            addTable(tname)
+            //this is the UI 
+            //can probably be replaced with the updateUIFromState function 
+            //addTable(tname)
+            
             tableNameInput.value = ""
             //add to the global list here 
             let newTable = { name: tname, fields: [] }
             //add table to list 
             tables.push(newTable)
-            //debug the tables list state
-            for (tbl of tables) {
-                console.log("Table:", tbl)
-            }
-
+            //update UI after setting state
+            updateUIFromState()
         }
 
     })
@@ -141,7 +149,7 @@ DB helper
 
         //the button to add a field to the table 
         let addFieldButton = document.createElement("button")
-        addFieldButton.innerHTML = "Add Field"
+        addFieldButton.innerHTML = "Add"
         addFieldButton.id = tableName + "-add-field"
         addFieldButton.className = "add-field"
 
@@ -166,9 +174,6 @@ DB helper
             let name = document.querySelector("#" + tableDiv.id + " #fieldNameInput")
             let type = document.querySelector("#" + tableDiv.id + " #fieldTypeInput")
             let pk = document.querySelector("#" + tableDiv.id + " #pkInput")
-
-            console.log("parent element input test ", name.value, type.value)
-            console.log("Primary key = ", pk.checked)
             //validate the value
             if (name.value == "") {
                 //present error 
@@ -181,7 +186,7 @@ DB helper
                 //update the state 
                 addField(pk.checked, false, name.value, type.value, tableName)
                 //update the UI 
-                addFieldUI(tableName,pk.checked)
+                addFieldUI(tableName,name.value,type.value,pk.checked)
             }
         })
 
@@ -204,53 +209,62 @@ DB helper
         //add it to the tables field list        
         for (t of tables) {
             if (t.name == tableName) {
-                console.log("Field added to ", t.name)
-                //check if PK 
                 t.fields.push(fieldObject)
+                
+                // TODO <----
+                //check that there isnt already a primary key in this table
+                //might need a dictionary to keep track of tables with primary keys 
+
             }
         }
 
     }
 
+    //i think this needs to be async ? 
     //build the fields UI from the state of the tables fields 
-    function addFieldUI(tableName,PK = false,FK = false) {
+    function addFieldUI(tableName,name,type,PK = false,FK = false) {
         //find the correct table 
         let parentTable = document.getElementById(tableName + "-table")
 
-        if (parentTable) {
-            console.log("found parent table : ", parentTable.id)
-
-            //loop over the tables list 
-            for (tbl of tables) {
-                if (tbl.name == tableName) {
-                    if(tbl.fields.length > 0){
-                        console.log("tables fields : ",tbl.fields)
-                    }
-                    console.log("UI 2 table:",tbl)
-                    addFieldToTable(parentTable,PK,FK)
+        for (tbl of tables) {
+            if (tbl.name == tableName) {
+                console.log("UI 2 table:",tbl)
+                addFieldToTable(parentTable,name,type,PK,FK)
+                if(tbl.fields.length > 0){
+                    //console.log("tables fields : ",tbl.fields)
                 }
             }
         }
+
     }
     //UI
-    function addFieldToTable(parent,PK = false, fk = false ) {
+    function addFieldToTable(parent,fieldName = null, fieldType = null,PK = false, fk = false ) {
 
-        console.log("PARENT ID ",parent.id)
         let tableName = parent.id
         tableName = tableName.substring(0, tableName.length - 6);
-        console.log("PARENT TABLE NAME ",tableName)
 
+        var nameInput = document.querySelector("#" + parent.id + " #fieldNameInput")
+        var typeInput = document.querySelector("#" + parent.id + " #fieldTypeInput")
+
+        var name = ""
+        var type = ""
         //get the value from inputs of the parent 
-        var name = document.querySelector("#" + parent.id + " #fieldNameInput")
-        var type = document.querySelector("#" + parent.id + " #fieldTypeInput")
+        if(fieldName != null){
+            name = fieldName
+        }else{
+            name = nameInput.value
+        }
+
+        if(fieldType != null){
+            type = fieldType
+        }else{
+            type = typeInput.value
+        }
 
         let fieldDiv = document.createElement("div")
         fieldDiv.style.width = parent.offsetWidth - 6 + "px";
         fieldDiv.className = "field2"
         if(PK){
-            //add a image for the key 
-            //console.log("UI PRIMARY KEY")
-
             let pkimage = document.createElement("img")
             pkimage.src = "{{url_for('static', filename='icons/pk_icon.png')}}"
             pkimage.width = "30px" 
@@ -262,8 +276,8 @@ DB helper
             fieldDiv.classList.add("primary-key")
         }
 
-        fieldDiv.innerHTML += "<span id='field-name'>" + name.value + "</span>"
-        fieldDiv.innerHTML += "<span>" + type.value + "</span>"
+        fieldDiv.innerHTML += "<span id='field-name'>" + name + "</span>"
+        fieldDiv.innerHTML += "<span>" + type+ "</span>"
         
         let removeFieldButton = document.createElement("button")
         removeFieldButton.innerText = "X"
@@ -274,39 +288,73 @@ DB helper
             let tableDiv = fieldDiv.parentElement
 
             let fieldName = fieldDiv.querySelector("#field-name")
-            console.log("NAME ",fieldName.innerText)
+            //console.log("NAME ",fieldName.innerText)
 
-            //attempt to remove field from state 
+            //attempt to remove field from state. Probably a bad idea to modify the state here 
             for (tbl of tables) {
                 if (tbl.name == tableName) {
                     if(tbl.fields.length > 0){
                         console.log("tables fields : ",tbl.fields)
                         //get index of item to remove 
                         let index = tbl.fields.findIndex(field => field.fieldName == fieldName.innerText)
+                        console.log("INDEX",index)
                         
                         //slice the fields array tro remove at the index 
+                        if(index !== -1){
+                            console.log("removing field at ",index," = ",tbl.fields[index])
+                            tbl.fields.splice(index,1)
+                        }
                         
-                        console.log("INDEX",index)
                     }
                 }
                // console.log("DELETE table:",tbl)
             }
-
-            
             //DONT FORGET THE STATE 
             tableDiv.removeChild(fieldDiv)
         })
-
-
         //cear the text 
-        name.value = ""
+        nameInput.value = ""
         fieldDiv.appendChild(removeFieldButton)
         parent.appendChild(fieldDiv)
     }
 
-    function updateUIFromState() {
-        //loop over the tables list and update the UI 
 
+    function updateUIFromState() {
+        //clear the old UI ?
+        tablesWrapper.innerHTML = ""
+        //loop over the tables list and update the UI 
+        for(tbl of tables){
+            //draw the tables 
+            addTable(tbl.name)
+            console.log("ADDING TABLE = ",tbl)
+            for(field of tbl.fields){
+                console.log("FIELD = ",field)
+
+            }
+        }
+        //tables need to be added before the fields 
+        //NOT THE BEST WAY 
+        //BUT I THINK ITS THE BEST FOR NOW
+        for(tbl of tables){
+            for(fld of tbl.fields){
+                let parentTable = document.getElementById(tbl.name + "-table")
+                console.log("PARENT TABLE EXISTS ",parentTable)
+
+                console.log("ADDING FIELD = ",fld, "TO TABLE = ",tbl.name)
+                addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
+                //addFieldUI(tbl.name,fld.fieldName,fld.fieldType,fld.PK)
+                //addfieldUI2(tbl,fld)
+            }
+            //loop over the field in each and add them to ther parent table 
+        }
+
+        for(let i = 0; i < tables.length; i++){
+            console.log("NEW FOR TABLE = ",tables[i])
+            for(let j =0; j < tables[i].fields.length; j++){
+                console.log("NEW TABLE FIELDS = ",tables[i].fields[j])
+
+            }
+        }
 
     }
 
@@ -320,13 +368,6 @@ DB helper
             warningText.innerText = ""
         }, timeOut)
     }
-
-    document.getElementById("test").addEventListener('click',function(e){
-        console.log(`Tables = ${tables}`)
-        for(tbl of tables){
-            console.log("Tbl = ",tbl)
-        }
-    })
 
     //test the save 
     document.getElementById("save").addEventListener("click",function(e){

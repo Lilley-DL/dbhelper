@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}
+DB helper - login
+{% endblock title %}
+
+{% block content %}
+<h1>Welcome</h1>
+
+<form action="/login" method="post">
+    {{form.hidden_tag()}}
+    {{form.userCode.label}} {{form.userCode()}}
+    <br>
+    {{form.passCode.label}} {{form.passCode()}}
+    <br>
+    {{form.submit()}}
+</form>
+
+{% endblock content %}
+
+
+{% block scripts %}
+
+{% endblock scripts %}
