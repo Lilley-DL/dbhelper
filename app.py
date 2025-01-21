@@ -85,6 +85,7 @@ def load_user(user_id):
         app.logger.error("Error while loading user  ",error)
         return None
 
+#request loader ? 
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -145,6 +146,11 @@ def logout():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/erd-builder")
+@flask_login.login_required
+def erdBuilder():
+    return render_template("erdBuilder.html")
 
 @app.route("/save",methods=['POST'])
 def save():

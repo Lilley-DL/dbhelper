@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% block title %}
+DB helper - ERD builder
+{% endblock title %}
+
+{% block content %}
+<h3>User Code: {{current_user.userCode}}</h3>
+<button id="test">Test</button> 
+<button id="save">Save</button>
+
+<div>
+    <h4>Scenario</h4>
+    <span>make a database for a used car sales system </span>
+</div>
+<br>
+<span id="warning"></span>
+
+<div id="nameWrapper">    
+    <label for="databaseName">Database Name:</label>
+    <input type="text" id="databaseNameInput" name="databaseName">
+    <button id="setNameButton">Set name</button>
+    <h3 id="databaseName"></h3>
+</div>
+
+<h4>Create tables here</h4>
+<div class="table-design-wrapper">
+
+    <label for="tableName">Table name:</label>
+    <input id="tableNameInput" type="text">
+    <button id="addTableButton">Add table</button>
+
+    <br>
+
+    <div id="tables-wrapper">
+
+    </div>
+
+    <!-- the modals -->
+    <dialog id="add-field-modal">
+        <button autofocus>Close</button>
+        <form>
+
+            <label for="fieldName">Name: </label>
+            <input id="fieldName" type="text">
+            <label for="fieldType">Type: </label>
+            <input id="fieldType" type="text">
+            <button id="addFieldButton"> Add field</button>
+        </form>
+    </dialog>
+
+</div>
+
+{% endblock content %}
+
+
+{% block scripts %}
+<script>
+    var addTableButton = document.getElementById("addTableButton")
+
+    var tablesWrapper = document.getElementById("tables-wrapper")
+
+    var addFieldModal = document.getElementById("add-field-modal")
+    var closeAddFieldModal = document.querySelector("dialog button") // might need to be more specific for multiple modals
+
+    var addFieldButton = document.getElementById("addFieldButton")
+
+    let fieldName = document.getElementById("fieldName")
+    let fieldType = document.getElementById("fieldType")
+
+    var tableNameInput = document.getElementById("tableNameInput")
+
+    var testButton = document.getElementById("test")
+
+    var databaseNameInput = document.getElementById("databaseNameInput")
+    var databaseName = document.getElementById("databaseName")
+    var setNameButton = document.getElementById("setNameButton")
+
+    var databaseSchema ={}
+    var tables = []
+    //when the db is fincished, place the tables into the databseschema to submit as 1 object 
+    var altTables = {}
+
+    setNameButton.addEventListener("click",function(event){
+        if(databaseNameInput.value == ""){
+            displayWarning("Database name must not be blank")
+            return
+        }else if(databaseNameInput.value.length < 4){
+            displayWarning("Database name must be more than 3 characters")
+            return
+        }else{
+            databaseName.innerText = databaseNameInput.value
+            //SANITIZE
+            databaseSchema['name'] = databaseNameInput.value
+        }
+    })
+
+    testButton.addEventListener("click",function(event){
+        console.log("TABLES STATE ",tables)
+        console.log("ALT TABLES STATE ",altTables)
+        updateUIFromState()
+    })
+
+    addTableButton.addEventListener('click', function(e) {
+        event.preventDefault()
+        let tname = tableNameInput.value
+
+        if (tname == "") {
+            //present error 
+            displayWarning("There must be a table name")
+
+        } else if (tname.length < 4) {
+
+            displayWarning("Table name must have more than 3 characters")
+
+        }else if(tname.includes(" ")){
+
+            displayWarning("Table name must not contain a 'space' character")
+        
+        } else {
+
+            //this is the UI 
+            //can probably be replaced with the updateUIFromState function 
+            //addTable(tname)
+            
+            tableNameInput.value = ""
+            //add to the global list here 
+            let newTable = { name: tname, fields: [] }
+            
+            //add table to list 
+            tables.push(newTable)
+            altTables[tname] = newTable
+
+            //update UI after setting state
+            updateUIFromState()
+        }
+
+    })
+
+    //might need to keep a list of names and stop conflicts 
+    function addTable(tableName) {
+
+        //create the base empty div 
+        let tableDiv = document.createElement("div")
+        tableDiv.id = tableName + "-table"
+        tableDiv.className = " table" // this should set all of the styles ?? 
+
+        let nameDiv = document.createElement("div")
+        nameDiv.id = tableName + "-name"
+        nameDiv.className = "table-name"
+        nameDiv.innerHTML = tableName
+        nameDiv.style.width = tableDiv.style.width + "px"
+
+        //PK 
+        let pkInput = document.createElement("input")
+        pkInput.id = "pkInput"
+        pkInput.type = "checkbox"
+        pkInput.checked = false
+
+        //field name input 
+        let fieldNameInput = document.createElement("input")
+        fieldNameInput.id = "fieldNameInput"
+        fieldNameInput.type = "text"
+        fieldNameInput.placeholder = "Field Name"
+
+        //field type input - select 
+        let fieldTypeInput = document.createElement("select")
+        fieldTypeInput.id = "fieldTypeInput"
+
+        let option1 = document.createElement("option")
+        option1.value = "INT"
+        option1.text = "INT"
+
+        let option2 = document.createElement("option")
+        option2.value = "VARCHAR"
+        option2.text = "VARCHAR"
+
+        let option3 = document.createElement("option")
+        option3.value = "BOOL"
+        option3.text = "BOOL"
+
+        fieldTypeInput.appendChild(option1)
+        fieldTypeInput.appendChild(option2)
+        fieldTypeInput.appendChild(option3)
+
+        //the button to add a field to the table 
+        let addFieldButton = document.createElement("button")
+        addFieldButton.innerHTML = "Add"
+        addFieldButton.id = tableName + "-add-field"
+        addFieldButton.className = "add-field"
+
+        //create wrapper for inputs 
+        let inputWrapper = document.createElement("div")
+        inputWrapper.className = "table-inputs-wrapper"
+
+        // the field input elements
+        inputWrapper.appendChild(pkInput)
+        inputWrapper.appendChild(fieldNameInput)
+        inputWrapper.appendChild(fieldTypeInput)
+        inputWrapper.appendChild(addFieldButton)
+
+        tableDiv.appendChild(inputWrapper)
+        tableDiv.appendChild(nameDiv)
+
+        //add the field info 
+
+        addFieldButton.addEventListener("click", function (e) {
+            event.preventDefault()
+            
+            let name = document.querySelector("#" + tableDiv.id + " #fieldNameInput")
+            let type = document.querySelector("#" + tableDiv.id + " #fieldTypeInput")
+            let pk = document.querySelector("#" + tableDiv.id + " #pkInput")
+            //validate the value
+            if (name.value == "") {
+                //present error 
+                displayWarning("There must be a field name")
+            } else if (name.value.length < 4) {
+                displayWarning("Field name must have more than 3 characters")
+            }else if(name.value.includes(" ")){
+                displayWarning("Field name must not contain a 'space' character")
+            } else {
+                //update the state 
+                addField(pk.checked, false, name.value, type.value, tableName)
+                //update the UI 
+                addFieldUI(tableName,name.value,type.value,pk.checked)
+            }
+        })
+
+        tablesWrapper.append(tableDiv)
+    }
+
+    //creates the field and adds it to the table object in the tables list  
+    function addField(PK = false, FK = false, fieldName, fieldType, tableName) {
+        
+        let fieldId = fieldName+"_"+tableName
+        //create the field object 
+        let fieldObject = {
+            fieldId:fieldId,
+            fieldName: fieldName,
+            fieldType: fieldType,
+            PK: PK,
+            FK: FK
+        }
+
+        for(tbl in altTables){
+            console.log("ALT TABLE = ",tbl)
+        }
+
+        //add it to the tables field list        
+        for (t of tables) {
+            if (t.name == tableName) {
+                t.fields.push(fieldObject)
+                
+                // TODO <----
+                //check that there isnt already a primary key in this table
+                //might need a dictionary to keep track of tables with primary keys 
+
+            }
+        }
+
+    }
+
+    //i think this needs to be async ? 
+    //build the fields UI from the state of the tables fields 
+    function addFieldUI(tableName,name,type,PK = false,FK = false) {
+        //find the correct table 
+        let parentTable = document.getElementById(tableName + "-table")
+
+        for (tbl of tables) {
+            if (tbl.name == tableName) {
+                console.log("UI 2 table:",tbl)
+                addFieldToTable(parentTable,name,type,PK,FK)
+                if(tbl.fields.length > 0){
+                    //console.log("tables fields : ",tbl.fields)
+                }
+            }
+        }
+
+    }
+    //UI
+    function addFieldToTable(parent,fieldName = null, fieldType = null,PK = false, fk = false ) {
+
+        let tableName = parent.id
+        tableName = tableName.substring(0, tableName.length - 6);
+
+        var nameInput = document.querySelector("#" + parent.id + " #fieldNameInput")
+        var typeInput = document.querySelector("#" + parent.id + " #fieldTypeInput")
+
+        var name = ""
+        var type = ""
+        //get the value from inputs of the parent 
+        if(fieldName != null){
+            name = fieldName
+        }else{
+            name = nameInput.value
+        }
+
+        if(fieldType != null){
+            type = fieldType
+        }else{
+            type = typeInput.value
+        }
+
+        let fieldDiv = document.createElement("div")
+        fieldDiv.style.width = parent.offsetWidth - 6 + "px";
+        fieldDiv.className = "field2"
+        if(PK){
+            let pkimage = document.createElement("img")
+            pkimage.src = "{{url_for('static', filename='icons/pk_icon.png')}}"
+            pkimage.width = "30px" 
+            fieldDiv.appendChild(pkimage)
+            
+            let pkimgsrc = "{{url_for('static', filename='icons/pk_icon2.png')}}"
+            fieldDiv.innerHTML = "<img id='pk-image' src=" +pkimgsrc+">" 
+
+            fieldDiv.classList.add("primary-key")
+        }
+
+        fieldDiv.innerHTML += "<span id='field-name'>" + name + "</span>"
+        fieldDiv.innerHTML += "<span>" + type+ "</span>"
+        
+        let removeFieldButton = document.createElement("button")
+        removeFieldButton.innerText = "X"
+
+        removeFieldButton.addEventListener("click", function(event){
+            console.log("REMOVE FIELD EVENT TARGET ", event.target.parentElement)
+            let fieldDiv = event.target.parentElement
+            let tableDiv = fieldDiv.parentElement
+
+            let fieldName = fieldDiv.querySelector("#field-name")
+            //console.log("NAME ",fieldName.innerText)
+
+            //attempt to remove field from state. Probably a bad idea to modify the state here 
+            for (tbl of tables) {
+                if (tbl.name == tableName) {
+                    if(tbl.fields.length > 0){
+                        //get index of item to remove 
+                        let index = tbl.fields.findIndex(field => field.fieldName == fieldName.innerText)
+                        console.log("INDEX",index)
+                        
+                        //slice the fields array tro remove at the index 
+                        if(index !== -1){
+                            tbl.fields.splice(index,1)
+                        }
+                        
+                    }
+                }
+               // console.log("DELETE table:",tbl)
+            }
+            //DONT FORGET THE STATE 
+            tableDiv.removeChild(fieldDiv)
+        })
+        //cear the text 
+        nameInput.value = ""
+        fieldDiv.appendChild(removeFieldButton)
+        parent.appendChild(fieldDiv)
+    }
+
+
+    function updateUIFromState() {
+        //clear the old UI ?
+        tablesWrapper.innerHTML = ""
+        //loop over the tables list and update the UI 
+        for(tbl of tables){
+            //draw the tables 
+            addTable(tbl.name)
+        }
+        //tables need to be added before the fields 
+        //NOT THE BEST WAY 
+        //BUT I THINK ITS THE BEST FOR NOW
+        for(tbl of tables){
+            for(fld of tbl.fields){
+                let parentTable = document.getElementById(tbl.name + "-table")
+                //console.log("PARENT TABLE EXISTS ",parentTable)
+                //console.log("ADDING FIELD = ",fld, "TO TABLE = ",tbl.name)
+                addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
+            }
+            //loop over the field in each and add them to ther parent table 
+        }
+
+        //for(let i = 0; i < tables.length; i++){
+        //    console.log("NEW FOR TABLE = ",tables[i])
+        //    for(let j =0; j < tables[i].fields.length; j++){
+        //        console.log("NEW TABLE FIELDS = ",tables[i].fields[j])
+//
+        //    }
+        //}
+
+    }
+
+    /**
+    * displays a warning message for "timeOut" amount of milliseconds. timeout default 2000 milliseconds
+    */
+    function displayWarning(message,timeOut = 2000) {
+        let warningText = document.getElementById("warning")
+        warningText.innerText = message
+        setTimeout(() => {
+            warningText.innerText = ""
+        }, timeOut)
+    }
+
+    //test the save 
+    document.getElementById("save").addEventListener("click",function(e){
+
+        fetch('/save',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify(tables)
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error("Error: ",error))
+
+    })
+
+
+</script>
+{% endblock scripts %}
