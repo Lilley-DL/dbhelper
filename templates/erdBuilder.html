@@ -24,17 +24,22 @@ DB helper - ERD builder
 
 <h4>Create tables here</h4>
 <div class="table-design-wrapper">
-
-    <label for="tableName">Table name:</label>
-    <input id="tableNameInput" type="text">
-    <button id="addTableButton">Add table</button>
+    <div>
+        <h4>Table Name:</h4>
+        <!-- <label for="tableName">Table name:</label> -->
+        <input id="tableNameInput" type="text">
+        <button id="addTableButton">Add table</button>
+    </div>
+    <br>
     <div class="field-inputs-wrapper">
+        <h4>Field information</h4>
         <label for="pkInput">Primary key:</label>
         <input id="pkInput" type="checkbox">
         <label for="fkInput">Foreign key:</label>
         <input type="checkbox" name="fkInput" id="fkInput">
-        <select name="fkChoice" id="fkChoice">
-            
+        <!-- try to hide this input unless the fk check is checked ? -->
+        <select name="fkSelect" id="fkSelect">
+
         </select>
         <input id="fieldNameInput" type="text" placeholder="Field Name">
         <select id="fieldTypeInput">
@@ -42,26 +47,13 @@ DB helper - ERD builder
             <option value="VARCHAR">VARCHAR</option>
             <option value="BOOL">BOOL</option>
         </select>
-        <button id="cars-add-field" class="add-field">Add</button>
+        <button id="add-field-button" class="add-field">Add</button>
     </div>
     <br>
 
     <div id="tables-wrapper">
 
     </div>
-
-    <!-- the modals -->
-    <dialog id="add-field-modal">
-        <button autofocus>Close</button>
-        <form>
-
-            <label for="fieldName">Name: </label>
-            <input id="fieldName" type="text">
-            <label for="fieldType">Type: </label>
-            <input id="fieldType" type="text">
-            <button id="addFieldButton"> Add field</button>
-        </form>
-    </dialog>
 
 </div>
 
@@ -70,25 +62,23 @@ DB helper - ERD builder
 
 {% block scripts %}
 <script>
-    var addTableButton = document.getElementById("addTableButton")
+    var testButton = document.getElementById("test")
 
     var tablesWrapper = document.getElementById("tables-wrapper")
-
-    var addFieldModal = document.getElementById("add-field-modal")
-    var closeAddFieldModal = document.querySelector("dialog button") // might need to be more specific for multiple modals
-
-    var addFieldButton = document.getElementById("addFieldButton")
-
-    let fieldName = document.getElementById("fieldName")
-    let fieldType = document.getElementById("fieldType")
-
-    var tableNameInput = document.getElementById("tableNameInput")
-
-    var testButton = document.getElementById("test")
 
     var databaseNameInput = document.getElementById("databaseNameInput")
     var databaseName = document.getElementById("databaseName")
     var setNameButton = document.getElementById("setNameButton")
+
+    var tableNameInput = document.getElementById("tableNameInput")
+    var addTableButton = document.getElementById("addTableButton")
+
+    var pkInput = document.getElementById("pkInput")
+    var fkInput = document.getElementById("fkInput")
+    var fkSelect = document.getElementById("fkSelect")
+    var fieldName = document.getElementById("fieldNameInput")
+    var fieldType = document.getElementById("fieldTypeInput")
+    var addfieldButton = document.getElementById("add-field-button")
 
     var databaseSchema ={}
     var tables = []
@@ -111,6 +101,29 @@ DB helper - ERD builder
             }
         }
     }
+
+    addfieldButton.addEventListener("click",function(event){
+        //check for a selected table and give error if none if selected 
+        if(selectedTable == null){
+            displayWarning("Must select a table to add a field to")
+            return
+        }
+        let tableName = selectedTable.id.replace("-table",'')
+        let pk = pkInput.checked
+        let fk = fkInput.checked
+        let name = fieldName.value
+        let type = fieldType.value
+        console.log("The fields attributes ",tableName,pk,fk,name,type)
+
+        //update the state 
+        addField(pk, fk, name, type, tableName)
+        //update the UI 
+        addFieldUI(tableName,name,type,pk,fk)
+
+        //get the selected table 
+        //update state 
+        //rebuild UI 
+    })
 
     setNameButton.addEventListener("click",function(event){
         if(databaseNameInput.value == ""){
@@ -408,17 +421,8 @@ DB helper - ERD builder
                 //console.log("ADDING FIELD = ",fld, "TO TABLE = ",tbl.name)
                 addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
             }
-            //loop over the field in each and add them to ther parent table 
+
         }
-
-        //for(let i = 0; i < tables.length; i++){
-        //    console.log("NEW FOR TABLE = ",tables[i])
-        //    for(let j =0; j < tables[i].fields.length; j++){
-        //        console.log("NEW TABLE FIELDS = ",tables[i].fields[j])
-//
-        //    }
-        //}
-
     }
 
     /**
