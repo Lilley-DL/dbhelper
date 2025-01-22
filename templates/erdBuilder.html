@@ -28,7 +28,22 @@ DB helper - ERD builder
     <label for="tableName">Table name:</label>
     <input id="tableNameInput" type="text">
     <button id="addTableButton">Add table</button>
-
+    <div class="field-inputs-wrapper">
+        <label for="pkInput">Primary key:</label>
+        <input id="pkInput" type="checkbox">
+        <label for="fkInput">Foreign key:</label>
+        <input type="checkbox" name="fkInput" id="fkInput">
+        <select name="fkChoice" id="fkChoice">
+            
+        </select>
+        <input id="fieldNameInput" type="text" placeholder="Field Name">
+        <select id="fieldTypeInput">
+            <option value="INT">INT</option>
+            <option value="VARCHAR">VARCHAR</option>
+            <option value="BOOL">BOOL</option>
+        </select>
+        <button id="cars-add-field" class="add-field">Add</button>
+    </div>
     <br>
 
     <div id="tables-wrapper">
@@ -79,6 +94,23 @@ DB helper - ERD builder
     var tables = []
     //when the db is fincished, place the tables into the databseschema to submit as 1 object 
     var altTables = {}
+
+    var selectedTable = null
+
+    function highlightTable(selected){
+        var tableDivs = document.getElementsByClassName("table")
+        //clear all other highlighted tables 
+        for(let element of tableDivs){
+            element.classList.remove("selected-table")
+        }
+        
+        //loop and set the one with the correct id 
+        for(let element of tableDivs){
+            if(element.id == selected.id){
+                element.classList.add("selected-table")
+            }
+        }
+    }
 
     setNameButton.addEventListener("click",function(event){
         if(databaseNameInput.value == ""){
@@ -225,6 +257,13 @@ DB helper - ERD builder
             }
         })
 
+        //add event listene so the user can click to select the table to add a field 
+        tableDiv.addEventListener("click", function(event){
+            selectedTable = tableDiv
+            console.log("table selected = ", tableDiv)
+            highlightTable(selectedTable)
+        })
+
         tablesWrapper.append(tableDiv)
     }
 
@@ -239,10 +278,6 @@ DB helper - ERD builder
             fieldType: fieldType,
             PK: PK,
             FK: FK
-        }
-
-        for(tbl in altTables){
-            console.log("ALT TABLE = ",tbl)
         }
 
         //add it to the tables field list        
@@ -344,7 +379,6 @@ DB helper - ERD builder
                         
                     }
                 }
-               // console.log("DELETE table:",tbl)
             }
             //DONT FORGET THE STATE 
             tableDiv.removeChild(fieldDiv)
