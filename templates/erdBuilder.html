@@ -21,8 +21,6 @@ DB helper - ERD builder
     <button id="setNameButton">Set name</button>
     <h3 id="databaseName"></h3>
 </div>
-
-<h4>Create tables here</h4>
 <div class="table-design-wrapper">
     <div>
         <h4>Table Name:</h4>
@@ -62,6 +60,168 @@ DB helper - ERD builder
 
 {% block scripts %}
 <script>
+
+    var userScore = 0
+
+    var scenarioObject = {
+        "scenario_id": "2",
+        "acceptable_variations": {
+          "tables": [
+            {
+              "concept": "Cars Table",
+              "acceptable_names": ["Cars", "Vehicles", "CarInventory"],
+              "fields": [
+                {
+                  "concept": "Unique Car Identifier",
+                  "acceptable_names": ["CarID", "VehicleID", "ID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": true
+                },
+                {
+                  "concept": "Car Make",
+                  "acceptable_names": ["Make", "Manufacturer"],
+                  "acceptable_types": ["VARCHAR(50)", "TEXT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Car Model",
+                  "acceptable_names": ["Model"],
+                  "acceptable_types": ["VARCHAR(50)", "TEXT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Year of Manufacture",
+                  "acceptable_names": ["Year", "ManufactureYear"],
+                  "acceptable_types": ["YEAR", "INT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Price",
+                  "acceptable_names": ["Price", "Cost"],
+                  "acceptable_types": ["DECIMAL(10,2)", "FLOAT"],
+                  "is_primary_key": false
+                }
+              ]
+            },
+            {
+              "concept": "Sales Table",
+              "acceptable_names": ["Sales", "Transactions", "CarSales"],
+              "fields": [
+                {
+                  "concept": "Unique Sale Identifier",
+                  "acceptable_names": ["SaleID", "TransactionID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": true
+                },
+                {
+                  "concept": "Sold Car Identifier",
+                  "acceptable_names": ["CarID", "VehicleID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": false,
+                  "is_foreign_key": true,
+                  "references": "Cars"
+                },
+                {
+                  "concept": "Sales Staff Identifier",
+                  "acceptable_names": ["StaffID", "EmployeeID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": false,
+                  "is_foreign_key": true,
+                  "references": "Staff"
+                },
+                {
+                  "concept": "Sale Date",
+                  "acceptable_names": ["SaleDate", "TransactionDate"],
+                  "acceptable_types": ["DATE", "DATETIME"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Sale Amount",
+                  "acceptable_names": ["Amount", "SaleAmount", "Price"],
+                  "acceptable_types": ["DECIMAL(10,2)", "FLOAT"],
+                  "is_primary_key": false
+                }
+              ]
+            },
+            {
+              "concept": "Staff Table",
+              "acceptable_names": ["Staff", "Employees", "Team"],
+              "fields": [
+                {
+                  "concept": "Unique Staff Identifier",
+                  "acceptable_names": ["StaffID", "EmployeeID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": true
+                },
+                {
+                  "concept": "Staff Name",
+                  "acceptable_names": ["Name", "FullName"],
+                  "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Staff Role",
+                  "acceptable_names": ["Role", "Position"],
+                  "acceptable_types": ["VARCHAR(50)", "TEXT"],
+                  "is_primary_key": false
+                }
+              ]
+            },
+            {
+              "concept": "Customers Table",
+              "acceptable_names": ["Customers", "Clients", "Buyers"],
+              "fields": [
+                {
+                  "concept": "Unique Customer Identifier",
+                  "acceptable_names": ["CustomerID", "ClientID", "BuyerID"],
+                  "acceptable_types": ["INT", "BIGINT"],
+                  "is_primary_key": true
+                },
+                {
+                  "concept": "Customer Name",
+                  "acceptable_names": ["Name", "FullName"],
+                  "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Customer Phone",
+                  "acceptable_names": ["Phone", "ContactNumber"],
+                  "acceptable_types": ["VARCHAR(15)", "TEXT"],
+                  "is_primary_key": false
+                },
+                {
+                  "concept": "Customer Email",
+                  "acceptable_names": ["Email", "EmailAddress"],
+                  "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                  "is_primary_key": false
+                }
+              ]
+            }
+          ]
+        }
+      }
+
+    window.onload = (event) =>{
+        console.log("scenario object = ",scenarioObject)
+        for(tbl of scenarioObject.acceptable_variations.tables){
+            console.log("scenario table = ",tbl)
+        }
+    }
+
+    function checkTableName(name){
+        let index = -1
+        for(tbl of scenarioObject.acceptable_variations.tables){
+            console.log("scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            console.log("Index of name ",index)
+            if(index > -1){
+                console.log("Table Name is acceptable")
+                return true
+            }
+        }
+    }
+
+
     var testButton = document.getElementById("test")
 
     var tablesWrapper = document.getElementById("tables-wrapper")
@@ -114,6 +274,18 @@ DB helper - ERD builder
         let name = fieldName.value
         let type = fieldType.value
         console.log("The fields attributes ",tableName,pk,fk,name,type)
+        
+        if (name == "") {
+             //present error 
+             displayWarning("There must be a field name")
+             return
+         } else if (name.length < 4) {
+             displayWarning("Field name must have more than 3 characters")
+             return
+         }else if(name.includes(" ")){
+             displayWarning("Field name must not contain a 'space' character")
+             return
+         }
 
         //update the state 
         addField(pk, fk, name, type, tableName)
@@ -171,6 +343,13 @@ DB helper - ERD builder
             //add to the global list here 
             let newTable = { name: tname, fields: [] }
             
+            //MOVE THIS TO THE UIBUILD? 
+            //NEED TO REMOVE A POINT IF THE TABLE IS DELETED 
+            if(checkTableName(tname)){
+                userScore += 1
+                console.log("Score = ",userScore)
+            }
+
             //add table to list 
             tables.push(newTable)
             altTables[tname] = newTable
@@ -184,6 +363,8 @@ DB helper - ERD builder
     //might need to keep a list of names and stop conflicts 
     function addTable(tableName) {
 
+        //TODO : check the name against the acceptable tables names
+
         //create the base empty div 
         let tableDiv = document.createElement("div")
         tableDiv.id = tableName + "-table"
@@ -195,79 +376,22 @@ DB helper - ERD builder
         nameDiv.innerHTML = tableName
         nameDiv.style.width = tableDiv.style.width + "px"
 
-        //PK 
-        let pkInput = document.createElement("input")
-        pkInput.id = "pkInput"
-        pkInput.type = "checkbox"
-        pkInput.checked = false
+        //remove table button 
+        let removeTable = document.createElement("button")
+        removeTable.innerText = "X"
 
-        //field name input 
-        let fieldNameInput = document.createElement("input")
-        fieldNameInput.id = "fieldNameInput"
-        fieldNameInput.type = "text"
-        fieldNameInput.placeholder = "Field Name"
-
-        //field type input - select 
-        let fieldTypeInput = document.createElement("select")
-        fieldTypeInput.id = "fieldTypeInput"
-
-        let option1 = document.createElement("option")
-        option1.value = "INT"
-        option1.text = "INT"
-
-        let option2 = document.createElement("option")
-        option2.value = "VARCHAR"
-        option2.text = "VARCHAR"
-
-        let option3 = document.createElement("option")
-        option3.value = "BOOL"
-        option3.text = "BOOL"
-
-        fieldTypeInput.appendChild(option1)
-        fieldTypeInput.appendChild(option2)
-        fieldTypeInput.appendChild(option3)
-
-        //the button to add a field to the table 
-        let addFieldButton = document.createElement("button")
-        addFieldButton.innerHTML = "Add"
-        addFieldButton.id = tableName + "-add-field"
-        addFieldButton.className = "add-field"
-
-        //create wrapper for inputs 
-        let inputWrapper = document.createElement("div")
-        inputWrapper.className = "table-inputs-wrapper"
-
-        // the field input elements
-        inputWrapper.appendChild(pkInput)
-        inputWrapper.appendChild(fieldNameInput)
-        inputWrapper.appendChild(fieldTypeInput)
-        inputWrapper.appendChild(addFieldButton)
-
-        tableDiv.appendChild(inputWrapper)
+        //tableDiv.appendChild(inputWrapper)
+        nameDiv.appendChild(removeTable)
         tableDiv.appendChild(nameDiv)
 
-        //add the field info 
-
-        addFieldButton.addEventListener("click", function (e) {
-            event.preventDefault()
-            
-            let name = document.querySelector("#" + tableDiv.id + " #fieldNameInput")
-            let type = document.querySelector("#" + tableDiv.id + " #fieldTypeInput")
-            let pk = document.querySelector("#" + tableDiv.id + " #pkInput")
-            //validate the value
-            if (name.value == "") {
-                //present error 
-                displayWarning("There must be a field name")
-            } else if (name.value.length < 4) {
-                displayWarning("Field name must have more than 3 characters")
-            }else if(name.value.includes(" ")){
-                displayWarning("Field name must not contain a 'space' character")
-            } else {
-                //update the state 
-                addField(pk.checked, false, name.value, type.value, tableName)
-                //update the UI 
-                addFieldUI(tableName,name.value,type.value,pk.checked)
-            }
+        //remove table 
+        removeTable.addEventListener("click",function(event){
+            //get the tables wrapper then remove that element from it 
+            //change the state then re-render
+            let tableIndex = tables.findIndex(tbl => tbl.name == tableName)
+            console.log("REMOVING index = ",tableIndex)
+            tables.splice(tableIndex,1)
+            updateUIFromState()
         })
 
         //add event listene so the user can click to select the table to add a field 
@@ -325,7 +449,7 @@ DB helper - ERD builder
 
     }
     //UI
-    function addFieldToTable(parent,fieldName = null, fieldType = null,PK = false, fk = false ) {
+    function addFieldToTable(parent,field_name = null, fieldType = null,PK = false, fk = false ) {
 
         let tableName = parent.id
         tableName = tableName.substring(0, tableName.length - 6);
@@ -336,8 +460,8 @@ DB helper - ERD builder
         var name = ""
         var type = ""
         //get the value from inputs of the parent 
-        if(fieldName != null){
-            name = fieldName
+        if(field_name != null){
+            name = field_name
         }else{
             name = nameInput.value
         }
@@ -397,13 +521,15 @@ DB helper - ERD builder
             tableDiv.removeChild(fieldDiv)
         })
         //cear the text 
-        nameInput.value = ""
+        fieldName.value = ""
+        //TODO :: CREATE A FUNCTION TO CLEAR THE FIELD INPUTS
         fieldDiv.appendChild(removeFieldButton)
         parent.appendChild(fieldDiv)
     }
 
 
     function updateUIFromState() {
+
         //clear the old UI ?
         tablesWrapper.innerHTML = ""
         //loop over the tables list and update the UI 
@@ -412,16 +538,16 @@ DB helper - ERD builder
             addTable(tbl.name)
         }
         //tables need to be added before the fields 
-        //NOT THE BEST WAY 
-        //BUT I THINK ITS THE BEST FOR NOW
+
         for(tbl of tables){
             for(fld of tbl.fields){
                 let parentTable = document.getElementById(tbl.name + "-table")
-                //console.log("PARENT TABLE EXISTS ",parentTable)
-                //console.log("ADDING FIELD = ",fld, "TO TABLE = ",tbl.name)
                 addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
             }
-
+        }
+        //TODO :: set the selected table highlight 
+        if(selectedTable){
+            highlightTable(selectedTable)
         }
     }
 
