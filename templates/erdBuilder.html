@@ -9,6 +9,7 @@ DB helper - ERD builder
 <button id="save">Save</button>
 
 <div>
+    <span id="debug-area">DEBUG SCORE :</span>
     <h4>Scenario</h4>
     <span>make a database for a used car sales system </span>
 </div>
@@ -21,25 +22,26 @@ DB helper - ERD builder
     <button id="setNameButton">Set name</button>
     <h3 id="databaseName"></h3>
 </div>
-<div class="table-design-wrapper">
-    <div>
+<div id="table-design-wrapper">
+    <div id="table-name-input-wrapper">
         <h4>Table Name:</h4>
         <!-- <label for="tableName">Table name:</label> -->
         <input id="tableNameInput" type="text">
         <button id="addTableButton">Add table</button>
     </div>
-    <br>
-    <div class="field-inputs-wrapper">
-        <h4>Field information</h4>
+    
+    <div id="field-inputs-wrapper">
+        <h4>Field information:</h4>
         <label for="pkInput">Primary key:</label>
         <input id="pkInput" type="checkbox">
         <label for="fkInput">Foreign key:</label>
         <input type="checkbox" name="fkInput" id="fkInput">
         <!-- try to hide this input unless the fk check is checked ? -->
+         <label for="fkSelect">References:</label>
         <select name="fkSelect" id="fkSelect">
-
         </select>
         <input id="fieldNameInput" type="text" placeholder="Field Name">
+        <label for="fieldTypeInput">Type:</label>
         <select id="fieldTypeInput">
             <option value="INT">INT</option>
             <option value="VARCHAR">VARCHAR</option>
@@ -49,11 +51,12 @@ DB helper - ERD builder
     </div>
     <br>
 
-    <div id="tables-wrapper">
+</div>
 
-    </div>
+<div id="tables-wrapper">
 
 </div>
+
 
 {% endblock content %}
 
@@ -221,6 +224,26 @@ DB helper - ERD builder
         }
     }
 
+    function checkFieldName(tableName,fieldName){
+        let index = -1
+        for(tbl of scenarioObject.acceptable_variations.tables){
+            //finc the table, assuming the table was acceptable 
+            index = tbl.acceptable_names.findIndex(tname => tname.toLowerCase() == tableName.toLowerCase())
+            if(index > -1){
+                //loop over tables fields 
+                let jindex = -1
+                for(fld of tbl.fields){
+                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+                    if(jindex > -1){
+                        return true
+                    }
+                }
+            }
+        }
+    }
+
+    //should it just loop through the acceptable field names ? 
+    //could i create a dictionary ? 
 
     var testButton = document.getElementById("test")
 
@@ -242,6 +265,9 @@ DB helper - ERD builder
 
     var databaseSchema ={}
     var tables = []
+
+    var primaryKeys = []
+    var relationships = []
     //when the db is fincished, place the tables into the databseschema to submit as 1 object 
     var altTables = {}
 
@@ -287,15 +313,48 @@ DB helper - ERD builder
              return
          }
 
-        //update the state 
-        addField(pk, fk, name, type, tableName)
-        //update the UI 
-        addFieldUI(tableName,name,type,pk,fk)
+        if(!checkPKConflict(pk,name)){
 
-        //get the selected table 
-        //update state 
-        //rebuild UI 
+            
+            var referenced = null
+            if(fk == true){
+                //get the referenced 
+            //let refid = relationships.indexOf(rel => rel.pkField)
+            let fkValue = fkSelect.value
+            console.log("FK SELECT ",fkSelect)
+            for(tbl of tables){
+                referenced = tbl.fields.find((fld) => fld.fieldId == fkValue)
+                if(referenced){
+                    console.log("FK RELATIONSHIP ",referenced)
+                    break
+                }
+            }
+            console.log("REF AFTER LOOP = ",referenced)
+            addField(pk, fk,referenced, name, type, tableName)
+            
+            }else{
+                //moved from above 
+                addField(pk, fk,referenced, name, type, tableName)
+            }
+            
+            //update the UI 
+            addFieldUI(tableName,name,type,pk,fk)
+        }else{
+            displayWarning("Primary key conflict")
+        }
     })
+
+    function checkPKConflict(PK,fieldName){
+        //chech that the Primary key doesnt exist in another table 
+        for(tbl of tables){
+            let conflict = tbl.fields.find((fld) => fld.fieldName == fieldName && fld.PK == PK )
+            if(conflict){
+                console.log("PRIOMARY KEY CONFLICT = ",conflict)
+                return true
+            }
+        }
+        return false
+    }
 
     setNameButton.addEventListener("click",function(event){
         if(databaseNameInput.value == ""){
@@ -313,7 +372,7 @@ DB helper - ERD builder
 
     testButton.addEventListener("click",function(event){
         console.log("TABLES STATE ",tables)
-        console.log("ALT TABLES STATE ",altTables)
+        console.log("RELATIONSHIPS STATE ",relationships)
         updateUIFromState()
     })
 
@@ -343,13 +402,6 @@ DB helper - ERD builder
             //add to the global list here 
             let newTable = { name: tname, fields: [] }
             
-            //MOVE THIS TO THE UIBUILD? 
-            //NEED TO REMOVE A POINT IF THE TABLE IS DELETED 
-            if(checkTableName(tname)){
-                userScore += 1
-                console.log("Score = ",userScore)
-            }
-
             //add table to list 
             tables.push(newTable)
             altTables[tname] = newTable
@@ -405,8 +457,10 @@ DB helper - ERD builder
     }
 
     //creates the field and adds it to the table object in the tables list  
-    function addField(PK = false, FK = false, fieldName, fieldType, tableName) {
+    function addField(PK = false, FK = false,referenced = null, fieldName, fieldType, tableName) {
         
+        console.log("TESTING ADDFIELD ref = ",referenced, "fk = ",FK)
+
         let fieldId = fieldName+"_"+tableName
         //create the field object 
         let fieldObject = {
@@ -417,18 +471,42 @@ DB helper - ERD builder
             FK: FK
         }
 
-        //add it to the tables field list        
-        for (t of tables) {
-            if (t.name == tableName) {
-                t.fields.push(fieldObject)
-                
-                // TODO <----
-                //check that there isnt already a primary key in this table
-                //might need a dictionary to keep track of tables with primary keys 
-
+        if(PK ==true){
+            //make a relationship object 
+            let relationshipObject ={
+                pkField:fieldObject,
+                fkField:null
             }
+            //add it to the list of relationships 
+            relationships.push(relationshipObject)
+            //update the UI list 
+            updateFKSelectOptions(fieldId,fieldName)
         }
 
+        if(FK == true && referenced != null){
+            let found = relationships.find((rel) => rel.pkField.fieldId == referenced.fieldId)
+            console.log("SETTING FOREIGN. REF = ",referenced," FOUND = ",found)
+            //set the foreign side of the relationship
+            found.fkField = fieldObject
+            console.log("RELATIONSHIPS = ",relationships)
+        }
+
+        //add it to the tables field list        
+        for (t of tables) {
+            if (t.name == tableName) { //might be ablt to use the selected table variable here now 
+                t.fields.push(fieldObject)
+            }
+        }
+    }
+
+    function updateFKSelectOptions(fieldId, name){
+        //could be better to loop through the relationships array and take the primary keys ?
+        //field id can be the value of the select 
+        let option = document.createElement("option")
+        option.value = fieldId
+        option.innerHTML = name
+
+        fkSelect.add(option)
     }
 
     //i think this needs to be async ? 
@@ -449,7 +527,7 @@ DB helper - ERD builder
 
     }
     //UI
-    function addFieldToTable(parent,field_name = null, fieldType = null,PK = false, fk = false ) {
+    function addFieldToTable(parent,field_name = null, fieldType = null,PK = false, FK = false ) {
 
         let tableName = parent.id
         tableName = tableName.substring(0, tableName.length - 6);
@@ -475,7 +553,8 @@ DB helper - ERD builder
         let fieldDiv = document.createElement("div")
         fieldDiv.style.width = parent.offsetWidth - 6 + "px";
         fieldDiv.className = "field2"
-        if(PK){
+        if(PK == true){
+            //not sure i need the below code ??
             let pkimage = document.createElement("img")
             pkimage.src = "{{url_for('static', filename='icons/pk_icon.png')}}"
             pkimage.width = "30px" 
@@ -485,6 +564,14 @@ DB helper - ERD builder
             fieldDiv.innerHTML = "<img id='pk-image' src=" +pkimgsrc+">" 
 
             fieldDiv.classList.add("primary-key")
+        }
+        
+        if(FK == true){
+            let fkimgsrc = "{{url_for('static', filename='icons/fk_icon.png')}}"
+            fieldDiv.innerHTML = "<img id='fk-image' src=" +fkimgsrc+">" 
+
+            fieldDiv.classList.add("foreign-key")
+
         }
 
         fieldDiv.innerHTML += "<span id='field-name'>" + name + "</span>"
@@ -527,15 +614,23 @@ DB helper - ERD builder
         parent.appendChild(fieldDiv)
     }
 
-
+    //this function builds / re-renders the tables 
     function updateUIFromState() {
-
+        //reset the score 
+        userScore = 0
         //clear the old UI ?
         tablesWrapper.innerHTML = ""
         //loop over the tables list and update the UI 
         for(tbl of tables){
             //draw the tables 
             addTable(tbl.name)
+            //SET THE SCORE 
+            
+            if(checkTableName(tbl.name)){
+                userScore += 1
+                console.log("Score = ",userScore)
+                document.getElementById("debug-area").innerText = "user score = " +userScore
+            }
         }
         //tables need to be added before the fields 
 
@@ -543,12 +638,18 @@ DB helper - ERD builder
             for(fld of tbl.fields){
                 let parentTable = document.getElementById(tbl.name + "-table")
                 addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
+                if(checkFieldName(tbl.name,fld.fieldName)){
+                    console.log(fld.fieldName," is acceptable ")
+                    //incrament the score
+                }
             }
         }
         //TODO :: set the selected table highlight 
         if(selectedTable){
             highlightTable(selectedTable)
         }
+
+        //TODO : reset the select for foreign key reference
     }
 
     /**

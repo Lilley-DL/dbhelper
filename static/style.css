@@ -104,6 +104,29 @@ h1{
     width: 50%;
 }
 
+#table-design-wrapper{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 50px;
+  background-color: azure;
+}
+
+#table-name-input-wrapper{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+#field-inputs-wrapper{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+
 .table-name{
     display: flex;
     flex-direction: row;
@@ -293,7 +316,15 @@ h1{
     background-color: #be9c2b;
   }
 
+  .foreign-key{
+    /* background-color: aquamarine; */
+  }
+
   #pk-image{
     width: 60px;
     /* align-self: flex-start; */
+  }
+
+  #fk-image{
+    width: 60px;
   }
