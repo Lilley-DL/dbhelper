@@ -1,0 +1,50 @@
+
+    {% extends 'base.html' %}
+    {% block title %}
+    Testing mermaid
+    {% endblock title %}
+    
+    {% block content %}
+    <button id="addTable">add table</button>
+
+  <div class="mermaid">
+    erDiagram
+        CUSTOMER {
+            int customer_id PK
+            string name
+            string email
+            string address
+        }
+        ORDER {
+            int order_id PK
+            int customer_id FK
+            date order_date
+            string status
+        }
+        ORDER_ITEM {
+            int order_item_id PK
+            int order_id FK
+            int product_id FK
+            int quantity
+        }
+        PRODUCT {
+            int product_id PK
+            string product_name
+            decimal price
+        }
+        CUSTOMER ||--o{ ORDER : places
+        ORDER ||--o{ ORDER_ITEM : contains
+        PRODUCT ||--o{ ORDER_ITEM : included_in
+  </div>
+
+
+  {% endblock content %}
+
+
+  {% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true});</script>
+  <script>
+    var tables
+  </script>
+  {% endblock scripts %}

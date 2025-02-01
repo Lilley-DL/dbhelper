@@ -221,6 +221,12 @@ def tabelBulder():
 def textBuilder():
     return render_template('textBuilder.html')
 
+@app.route("/testingmm")
+@flask_login.login_required
+def testingmm():
+    return render_template('new_version.html')
+
+
 ##for render to run 
 if __name__ == "__main__":
     app.run()

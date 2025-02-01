@@ -57,11 +57,16 @@ DB helper - ERD builder
 
 </div>
 
+<pre id="mermaid-diagram" class="mermaid"></pre>
+
+
 
 {% endblock content %}
 
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:false});</script>
 <script>
 
     var userScore = 0
@@ -301,7 +306,7 @@ DB helper - ERD builder
         let fk = fkInput.checked
         let name = fieldName.value
         let type = fieldType.value
-        console.log("The fields attributes ",tableName,pk,fk,name,type)
+        //console.log("The fields attributes ",tableName,pk,fk,name,type)
         
         if (name == "") {
              //present error 
@@ -323,24 +328,26 @@ DB helper - ERD builder
                 //get the referenced 
             //let refid = relationships.indexOf(rel => rel.pkField)
             let fkValue = fkSelect.value
-            console.log("FK SELECT ",fkSelect)
+            //console.log("FK SELECT ",fkSelect)
             for(tbl of tables){
                 referenced = tbl.fields.find((fld) => fld.fieldId == fkValue)
                 if(referenced){
-                    console.log("FK RELATIONSHIP ",referenced)
+                    //console.log("FK RELATIONSHIP ",referenced)
                     break
                 }
             }
-            console.log("REF AFTER LOOP = ",referenced)
+            //console.log("REF AFTER LOOP = ",referenced)
             addField(pk, fk,referenced, name, type, tableName)
             
             }else{
                 //moved from above 
                 addField(pk, fk,referenced, name, type, tableName)
+                
             }
             
             //update the UI 
-            addFieldUI(tableName,name,type,pk,fk)
+            //addFieldUI(tableName,name,type,pk,fk)
+            updateUIFromState()
         }else{
             displayWarning("Primary key conflict")
         }
@@ -372,10 +379,33 @@ DB helper - ERD builder
         }
     })
 
+    function getMermaidRelationship(relationship) {
+        const { pkField, fkField } = relationship;
+        const pkTableName = pkField.fieldId.split("_")[0]; 
+        const fkTableName = fkField.fieldId.split("_")[0];
+      
+        return `${pkTableName} ||--o{ ${fkTableName} : ${pkField.fieldName} }`; 
+      }
+
     testButton.addEventListener("click",function(event){
         console.log("TABLES STATE ",tables)
         console.log("RELATIONSHIPS STATE ",relationships)
+
+        let mermaidCode = ""
+        for (const relationship of relationships) {
+            try{
+
+                mermaidCode += getMermaidRelationship(relationship) + "\n"; 
+            }catch (error) {
+                console.error("Mermaid relationship error:", error);
+            }
+        }
+        console.log("Mermaid relationships : ", mermaidCode)
+        for(rel of relationships){
+            console.log(JSON.stringify(rel))
+        }
         updateUIFromState()
+        //renderDiagram(tables)
     })
 
     addTableButton.addEventListener('click', function(e) {
@@ -442,7 +472,7 @@ DB helper - ERD builder
             //get the tables wrapper then remove that element from it 
             //change the state then re-render
             let tableIndex = tables.findIndex(tbl => tbl.name == tableName)
-            console.log("REMOVING index = ",tableIndex)
+           // console.log("REMOVING index = ",tableIndex)
             tables.splice(tableIndex,1)
             updateUIFromState()
         })
@@ -450,7 +480,7 @@ DB helper - ERD builder
         //add event listene so the user can click to select the table to add a field 
         tableDiv.addEventListener("click", function(event){
             selectedTable = tableDiv
-            console.log("table selected = ", tableDiv)
+            //console.log("table selected = ", tableDiv)
             highlightTable(selectedTable)
         })
 
@@ -460,8 +490,6 @@ DB helper - ERD builder
 
     //creates the field and adds it to the table object in the tables list  
     function addField(PK = false, FK = false,referenced = null, fieldName, fieldType, tableName) {
-        
-        console.log("TESTING ADDFIELD ref = ",referenced, "fk = ",FK)
 
         let fieldId = fieldName+"_"+tableName
         //create the field object 
@@ -487,7 +515,6 @@ DB helper - ERD builder
 
         if(FK == true && referenced != null){
             let found = relationships.find((rel) => rel.pkField.fieldId == referenced.fieldId)
-            console.log("SETTING FOREIGN. REF = ",referenced," FOUND = ",found)
             //set the foreign side of the relationship
             found.fkField = fieldObject
             console.log("RELATIONSHIPS = ",relationships)
@@ -608,6 +635,7 @@ DB helper - ERD builder
             }
             //DONT FORGET THE STATE 
             tableDiv.removeChild(fieldDiv)
+            updateUIFromState()
         })
         //cear the text 
         fieldName.value = ""
@@ -667,6 +695,9 @@ DB helper - ERD builder
         }
 
         //TODO : reset the select for foreign key reference
+
+        //MERMAID BIT 
+        renderDiagram(tables)
     }
 
     function incramentUserScore(amount = 1){
@@ -705,6 +736,45 @@ DB helper - ERD builder
         .catch(error => console.error("Error: ",error))
 
     })
+
+
+
+
+    function createMermaidCode(tables) {
+        let mermaidCode = "erDiagram\n";
+        for (const table of tables) {
+          mermaidCode += `    ${table.name} {\n`;
+          for (const attribute of table.fields) {
+            console.log("mm attr ",attribute)
+            mermaidCode += `        ${attribute.fieldType} ${attribute.fieldName} ${attribute.PK ? 'PK' : ''} ${attribute.FK ? 'FK' : ''}\n`;
+          }
+          mermaidCode += "    }\n";
+        }
+
+        // do the relationships 
+
+
+        return mermaidCode;
+    }
+  
+    async function renderDiagram(tables) {
+        const mermaidCode = createMermaidCode(tables);
+        const diagramDiv = document.getElementById('mermaid-diagram');
+    
+        console.log("TEH MERMAID CODE = ", mermaidCode);
+    
+        try {
+            const { svg } = await mermaid.render('generatedDiagram', mermaidCode);
+            diagramDiv.innerHTML = svg;
+        } catch (error) {
+            console.error("Mermaid rendering error:", error);
+        }
+    }
+
+    // Ensure Mermaid is initialized before calling renderDiagram
+document.addEventListener("DOMContentLoaded", () => {
+    mermaid.initialize({ startOnLoad: false });
+});
 
 </script>
 {% endblock scripts %}
