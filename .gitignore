@@ -4,3 +4,4 @@ Notes.txt
 *.csv
 .env
 *.png
+examples.json

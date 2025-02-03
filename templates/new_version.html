@@ -57,7 +57,12 @@ DB helper - ERD builder
 
 </div>
 
+<!-- 1nf wrapper -->
 <pre id="mermaid-diagram" class="mermaid"></pre>
+<!-- 2nf wrapper -->
+<pre id="mermaid-diagram-2nf" class="mermaid"></pre>
+<!-- 3nf wrapper -->
+<pre id="mermaid-diagram-3nf" class="mermaid"></pre>
 
 
 
@@ -209,6 +214,163 @@ DB helper - ERD builder
         }
       }
 
+    var scenario2 = {
+        "scenario_id": "3",
+        "normal_forms": {
+          "1NF": {
+            "tables": [
+              {
+                "concept": "Student Enrollment",
+                "acceptable_names": ["Enrollments", "StudentCourses", "Student_Enrollments"],
+                "fields": [
+                  {
+                    "concept": "Unique Student Identifier",
+                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true
+                  },
+                  {
+                    "concept": "Student Name",
+                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  },
+                  {
+                    "concept": "Course Name",
+                    "acceptable_names": ["Course", "CourseTitle"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  },
+                  {
+                    "concept": "Grade",
+                    "acceptable_names": ["Grade", "FinalGrade"],
+                    "acceptable_types": ["VARCHAR(2)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              }
+            ]
+          },
+          "2NF": {
+            "tables": [
+              {
+                "concept": "Students Table",
+                "acceptable_names": ["Students", "Learners"],
+                "fields": [
+                  {
+                    "concept": "Unique Student Identifier",
+                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true
+                  },
+                  {
+                    "concept": "Student Name",
+                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              },
+              {
+                "concept": "Enrollments Table",
+                "acceptable_names": ["Enrollments", "StudentCourses"],
+                "fields": [
+                  {
+                    "concept": "Unique Student Identifier",
+                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true,
+                    "is_foreign_key": true,
+                    "references": "Students"
+                  },
+                  {
+                    "concept": "Course Name",
+                    "acceptable_names": ["Course", "CourseTitle"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": true
+                  },
+                  {
+                    "concept": "Grade",
+                    "acceptable_names": ["Grade", "FinalGrade"],
+                    "acceptable_types": ["VARCHAR(2)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              }
+            ]
+          },
+          "3NF": {
+            "tables": [
+              {
+                "concept": "Students Table",
+                "acceptable_names": ["Students", "Learners"],
+                "fields": [
+                  {
+                    "concept": "Unique Student Identifier",
+                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true
+                  },
+                  {
+                    "concept": "Student Name",
+                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              },
+              {
+                "concept": "Courses Table",
+                "acceptable_names": ["Courses", "Subjects"],
+                "fields": [
+                  {
+                    "concept": "Unique Course Identifier",
+                    "acceptable_names": ["CourseID", "CourseCode"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true
+                  },
+                  {
+                    "concept": "Course Name",
+                    "acceptable_names": ["Course", "CourseTitle"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              },
+              {
+                "concept": "Enrollments Table",
+                "acceptable_names": ["Enrollments", "StudentCourses"],
+                "fields": [
+                  {
+                    "concept": "Unique Student Identifier",
+                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true,
+                    "is_foreign_key": true,
+                    "references": "Students"
+                  },
+                  {
+                    "concept": "Unique Course Identifier",
+                    "acceptable_names": ["CourseID", "CourseCode"],
+                    "acceptable_types": ["INT", "BIGINT"],
+                    "is_primary_key": true,
+                    "is_foreign_key": true,
+                    "references": "Courses"
+                  },
+                  {
+                    "concept": "Grade",
+                    "acceptable_names": ["Grade", "FinalGrade"],
+                    "acceptable_types": ["VARCHAR(2)", "TEXT"],
+                    "is_primary_key": false
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+
+
     window.onload = (event) =>{
         console.log("scenario object = ",scenarioObject)
         for(tbl of scenarioObject.acceptable_variations.tables){
@@ -225,6 +387,39 @@ DB helper - ERD builder
             if(index > -1){
                 console.log("Table Name is acceptable")
                 return true
+            }
+        }
+    }
+
+    function checkTableName2(name){
+        let index = -1
+        for(tbl of scenario2.normal_forms["1NF"].tables){
+            console.log("1nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            console.log("Index of name ",index)
+            if(index > -1){
+                console.log("Table Name is acceptable in 1NF")
+                //return true
+            }
+        }
+        //2NF
+        for(tbl of scenario2.normal_forms["2NF"].tables){
+            console.log("2nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            console.log("Index of name ",index)
+            if(index > -1){
+                console.log("Table Name is acceptable in 2NF")
+                //return true
+            }
+        }
+        //3NF
+        for(tbl of scenario2.normal_forms["3NF"].tables){
+            console.log(" 3nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            console.log("Index of name ",index)
+            if(index > -1){
+                console.log("Table Name is acceptablein 3NF")
+                //return true
             }
         }
     }
@@ -381,8 +576,8 @@ DB helper - ERD builder
 
     function getMermaidRelationship(relationship) {
         const { pkField, fkField } = relationship;
-        const pkTableName = pkField.fieldId.split("_")[0]; 
-        const fkTableName = fkField.fieldId.split("_")[0];
+        const pkTableName = pkField.fieldId.split("_")[1]; 
+        const fkTableName = fkField.fieldId.split("_")[1];
       
         return `${pkTableName} ||--o{ ${fkTableName} : ${pkField.fieldName} }`; 
       }
@@ -401,9 +596,7 @@ DB helper - ERD builder
             }
         }
         console.log("Mermaid relationships : ", mermaidCode)
-        for(rel of relationships){
-            console.log(JSON.stringify(rel))
-        }
+
         updateUIFromState()
         //renderDiagram(tables)
     })
@@ -653,14 +846,15 @@ DB helper - ERD builder
         //loop over the tables list and update the UI 
         for(tbl of tables){
             //draw the tables 
+            const tablename = tbl.name
             addTable(tbl.name)
             //SET THE SCORE 
-            
             if(checkTableName(tbl.name)){
                 incramentUserScore()
-                //userScore += 1
-                //console.log("Score = ",userScore)
-                
+            }
+            //TESTING 
+            if(checkTableName2(tablename)){
+
             }
         }
         //tables need to be added before the fields 
