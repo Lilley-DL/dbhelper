@@ -59,9 +59,15 @@ DB helper - ERD builder
 
 <!-- 1nf wrapper -->
 <pre id="mermaid-diagram" class="mermaid"></pre>
-<!-- 2nf wrapper -->
-<pre id="mermaid-diagram-2nf" class="mermaid"></pre>
-<!-- 3nf wrapper -->
+ <h3>1NF</h3>
+ <pre id="mermaid-diagram-1nf" class="mermaid"></pre>
+
+ <!-- 2nf wrapper -->
+ <h3>2NF</h3>
+ <pre id="mermaid-diagram-2nf" class="mermaid"></pre>
+
+ <!-- 3nf wrapper -->
+ <h3>3NF</h3>
 <pre id="mermaid-diagram-3nf" class="mermaid"></pre>
 
 
@@ -370,56 +376,24 @@ DB helper - ERD builder
         }
       }
 
+      //these hold the tables to build the digrams from 
+    var tables_1nf=[]
 
-    window.onload = (event) =>{
-        console.log("scenario object = ",scenarioObject)
-        for(tbl of scenarioObject.acceptable_variations.tables){
-            console.log("scenario table = ",tbl)
-        }
-    }
+    var tables_2nf=[]
+
+    var tables_3nf=[]
+
+
 
     function checkTableName(name){
         let index = -1
         for(tbl of scenarioObject.acceptable_variations.tables){
-            console.log("scenario table = ",tbl)
+            //console.log("scenario table = ",tbl)
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
-            console.log("Index of name ",index)
+            //console.log("Index of name ",index)
             if(index > -1){
                 console.log("Table Name is acceptable")
                 return true
-            }
-        }
-    }
-
-    function checkTableName2(name){
-        let index = -1
-        for(tbl of scenario2.normal_forms["1NF"].tables){
-            console.log("1nf scenario table = ",tbl)
-            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
-            console.log("Index of name ",index)
-            if(index > -1){
-                console.log("Table Name is acceptable in 1NF")
-                //return true
-            }
-        }
-        //2NF
-        for(tbl of scenario2.normal_forms["2NF"].tables){
-            console.log("2nf scenario table = ",tbl)
-            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
-            console.log("Index of name ",index)
-            if(index > -1){
-                console.log("Table Name is acceptable in 2NF")
-                //return true
-            }
-        }
-        //3NF
-        for(tbl of scenario2.normal_forms["3NF"].tables){
-            console.log(" 3nf scenario table = ",tbl)
-            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
-            console.log("Index of name ",index)
-            if(index > -1){
-                console.log("Table Name is acceptablein 3NF")
-                //return true
             }
         }
     }
@@ -444,6 +418,119 @@ DB helper - ERD builder
 
             }
 
+        }
+    }
+
+    function checkTableName2(name){
+        let index = -1
+        for(tbl of scenario2.normal_forms["1NF"].tables){
+            //console.log("1nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            //console.log("Index of name ",index)
+            if(index > -1){
+                console.log(`${name} Table is acceptable in 1NF`)
+                //add table to the 1nf tables 
+                let newTable = { name: name, fields: [] }
+                tables_1nf.push(newTable)
+            }
+        }
+        //2NF
+        for(tbl of scenario2.normal_forms["2NF"].tables){
+            //console.log("2nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            //console.log("Index of name ",index)
+            if(index > -1){
+                console.log(`${name} Table is acceptable in 2NF`)
+                //return true
+                let newTable = { name: name, fields: [] }
+                tables_2nf.push(newTable)
+                console.log(`2nf tables ${tables_2nf}`)
+            }
+        }
+        //3NF
+        for(tbl of scenario2.normal_forms["3NF"].tables){
+            //console.log(" 3nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
+            //console.log("Index of name ",index)
+            if(index > -1){
+                console.log(`${name} Table is acceptable in 3NF`)
+                //return true
+                let newTable = { name: name, fields: [] }
+                tables_3nf.push(newTable)
+                console.log(`3nf tables ${tables_3nf}`)
+            }
+        }
+    }
+
+    function checkFieldName2(tableName,fieldName){
+        console.log(`table name in field check = ${tableName}, field = ${fieldName}`)
+        let index = -1
+        for(tbl of scenario2.normal_forms["1NF"].tables){
+            //console.log("CF 1nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
+            //console.log("CF Index of name ",index)
+           if(index > -1){
+                //console.log(`${tableName} table found in 1nf`)
+                //check field name 
+                let jindex = -1
+                for(fld of tbl.fields){
+
+                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+                    console.log(`fieldname index = ${jindex}`)
+                    if(jindex > -1){
+                        //return true
+                        //add to the 1nf tables list
+                        console.log(`adding ${fieldName} to ${tableName} in 1NF`)
+                    }
+                }
+                //return true
+            }else{
+                console.log(`adding ${fieldName} to a table in 1NF`)
+            }
+        }
+
+        //2NF
+        index = -1
+        for(tbl of scenario2.normal_forms["2NF"].tables){
+            //console.log("CF 2nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
+            console.log(`2NF Index of name ${tableName} = ${index}`)
+            if(index > -1){
+                console.log(`${tableName} table found in 2nf`)
+                let jindex = -1
+                for(fld of tbl.fields){
+                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+                    console.log(`fieldname index = ${jindex}`)
+                    if(jindex > -1){
+                        //Return true
+                        console.log(`adding ${fieldName} to ${tableName} in 2NF`)
+                    }
+                }
+                //return true
+            }
+        }
+
+        //3NF
+        index = -1
+        for(tbl of scenario2.normal_forms["3NF"].tables){
+            //console.log(" CF 3nf scenario table = ",tbl)
+            index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
+            //console.log("CF Index of name ",index)
+            if(index > -1){
+                console.log(`${tableName} table found in 3nf`)
+                let jindex = -1
+                for(fld of tbl.fields){
+
+                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+                    console.log(`fieldname index = ${jindex}`)
+                    if(jindex > -1){
+                        
+                        //return true
+                        console.log(`adding ${fieldName} to ${tableName} in 3NF`)
+                    }
+                }
+                //return true
+            }
         }
     }
 
@@ -741,9 +828,7 @@ DB helper - ERD builder
             if (tbl.name == tableName) {
                 console.log("UI 2 table:",tbl)
                 addFieldToTable(parentTable,name,type,PK,FK)
-                if(tbl.fields.length > 0){
-                    //console.log("tables fields : ",tbl.fields)
-                }
+
             }
         }
 
@@ -868,7 +953,6 @@ DB helper - ERD builder
             for(fld of tbl.fields){
 
                 var fieldName = fld.fieldName
-                console.log("field name BEFORE = ",fld.fieldName, "table name = ", tableName )
                 
                 addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
                 
@@ -881,6 +965,9 @@ DB helper - ERD builder
                     console.log("field name = ",fieldName, " is NOT OK")
                 }
 
+                //testing 2ndscenario
+                checkFieldName2(tableName,fieldName)
+
             }
         }
         //TODO :: set the selected table highlight 
@@ -892,6 +979,12 @@ DB helper - ERD builder
 
         //MERMAID BIT 
         renderDiagram(tables)
+        //1nf diagram
+        renderDiagram(tables_1nf,"mermaid-diagram-1nf")
+        //2nf diagram
+        renderDiagram(tables_2nf,"mermaid-diagram-2nf")
+        //3nf diagram
+        renderDiagram(tables_3nf,"mermaid-diagram-3nf")
     }
 
     function incramentUserScore(amount = 1){
@@ -939,26 +1032,26 @@ DB helper - ERD builder
         for (const table of tables) {
           mermaidCode += `    ${table.name} {\n`;
           for (const attribute of table.fields) {
-            console.log("mm attr ",attribute)
             mermaidCode += `        ${attribute.fieldType} ${attribute.fieldName} ${attribute.PK ? 'PK' : ''} ${attribute.FK ? 'FK' : ''}\n`;
           }
           mermaidCode += "    }\n";
         }
 
         // do the relationships 
-
-
         return mermaidCode;
     }
   
-    async function renderDiagram(tables) {
+    async function renderDiagram(tables,div = 'mermaid-diagram') {
         const mermaidCode = createMermaidCode(tables);
-        const diagramDiv = document.getElementById('mermaid-diagram');
+        //const diagramDiv = document.getElementById('mermaid-diagram');
+        const diagramDiv = document.getElementById(div);
     
         console.log("TEH MERMAID CODE = ", mermaidCode);
     
         try {
-            const { svg } = await mermaid.render('generatedDiagram', mermaidCode);
+            const uniqueId = `diagram-${div}`;
+            const { svg } = await mermaid.render(uniqueId, mermaidCode);
+            //const { svg } = await mermaid.render('generatedDiagram', mermaidCode);
             diagramDiv.innerHTML = svg;
         } catch (error) {
             console.error("Mermaid rendering error:", error);
