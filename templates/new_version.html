@@ -231,19 +231,19 @@ DB helper - ERD builder
                 "fields": [
                   {
                     "concept": "Unique Student Identifier",
-                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_names": ["StudentID", "student_ID"],
                     "acceptable_types": ["INT", "BIGINT"],
                     "is_primary_key": true
                   },
                   {
                     "concept": "Student Name",
-                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_names": ["Name", "FullName","student_name","student_fullname"],
                     "acceptable_types": ["VARCHAR(100)", "TEXT"],
                     "is_primary_key": false
                   },
                   {
                     "concept": "Course Name",
-                    "acceptable_names": ["Course", "CourseTitle"],
+                    "acceptable_names": ["Course", "CourseTitle","course_title"],
                     "acceptable_types": ["VARCHAR(100)", "TEXT"],
                     "is_primary_key": false
                   },
@@ -265,13 +265,19 @@ DB helper - ERD builder
                 "fields": [
                   {
                     "concept": "Unique Student Identifier",
-                    "acceptable_names": ["StudentID", "ID"],
+                    "acceptable_names": ["StudentID", "ID","student_id"],
                     "acceptable_types": ["INT", "BIGINT"],
                     "is_primary_key": true
                   },
                   {
                     "concept": "Student Name",
-                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_names": ["Name", "FullName","student_name","student_fullname"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  },
+				  {
+                    "concept": "Student Email",
+                    "acceptable_names": ["Email", "studentEmail"],
                     "acceptable_types": ["VARCHAR(100)", "TEXT"],
                     "is_primary_key": false
                   }
@@ -319,7 +325,13 @@ DB helper - ERD builder
                   },
                   {
                     "concept": "Student Name",
-                    "acceptable_names": ["Name", "FullName"],
+                    "acceptable_names": ["Name", "FullName","student_name","student_fullname"],
+                    "acceptable_types": ["VARCHAR(100)", "TEXT"],
+                    "is_primary_key": false
+                  },
+				  {
+                    "concept": "Student Email",
+                    "acceptable_names": ["Email", "studentEmail","student_email"],
                     "acceptable_types": ["VARCHAR(100)", "TEXT"],
                     "is_primary_key": false
                   }
@@ -428,10 +440,20 @@ DB helper - ERD builder
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
             //console.log("Index of name ",index)
             if(index > -1){
-                console.log(`${name} Table is acceptable in 1NF`)
-                //add table to the 1nf tables 
-                let newTable = { name: name, fields: [] }
-                tables_1nf.push(newTable)
+                //console.log(`${name} Table is acceptable in 1NF`)
+				//check it isnt duplicated 
+				let jindex = -1
+				jindex = tables_1nf.findIndex(table => table.name.toLowerCase() == name.toLowerCase())
+				if(jindex > -1){
+					//console.log(`Stopped duplicate of ${name} table`)
+				}else{
+					//add table to the 1nf tables 
+					let newTable = { name: name, fields: [] }
+					tables_1nf.push(newTable)
+				}
+
+				//dont duplicate 
+				//break
             }
         }
         //2NF
@@ -440,11 +462,17 @@ DB helper - ERD builder
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
             //console.log("Index of name ",index)
             if(index > -1){
-                console.log(`${name} Table is acceptable in 2NF`)
-                //return true
-                let newTable = { name: name, fields: [] }
-                tables_2nf.push(newTable)
-                console.log(`2nf tables ${tables_2nf}`)
+                //console.log(`${name} Table is acceptable in 2NF`)
+
+				let jindex = -1
+				jindex = tables_2nf.findIndex(table => table.name.toLowerCase() == name.toLowerCase())
+				if(jindex > -1){
+					//console.log(`Stopped duplicate of ${name} table`)
+				}else{
+					//add table to the 2nf tables 
+					let newTable = { name: name, fields: [] }
+					tables_2nf.push(newTable)
+				}
             }
         }
         //3NF
@@ -453,24 +481,34 @@ DB helper - ERD builder
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == name.toLowerCase())
             //console.log("Index of name ",index)
             if(index > -1){
-                console.log(`${name} Table is acceptable in 3NF`)
+                //console.log(`${name} Table is acceptable in 3NF`)
                 //return true
-                let newTable = { name: name, fields: [] }
-                tables_3nf.push(newTable)
-                console.log(`3nf tables ${tables_3nf}`)
+				let jindex = -1
+				jindex = tables_3nf.findIndex(table => table.name.toLowerCase() == name.toLowerCase())
+				if(jindex > -1){
+					//console.log(`Stopped duplicate of ${name} table`)
+				}else{
+					//add table to the 1nf tables 
+					let newTable = { name: name, fields: [] }
+					tables_3nf.push(newTable)
+				}
+				
             }
         }
     }
 
-    function checkFieldName2(tableName,fieldName){
-        console.log(`table name in field check = ${tableName}, field = ${fieldName}`)
+	//THIS FUNCTION DOES WAAAAAAY TOO MUCH AND SHOULD BE BROKEN INTO MODULAR FUNCTIONS 
+    function checkFieldName2(tableName,fieldName,fieldType,PK,FK){
+        //console.log(`table name in field check = ${tableName}, field = ${fieldName}`)
+		console.log("1NF")
         let index = -1
         for(tbl of scenario2.normal_forms["1NF"].tables){
-            //console.log("CF 1nf scenario table = ",tbl)
+
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
-            //console.log("CF Index of name ",index)
+
            if(index > -1){
-                //console.log(`${tableName} table found in 1nf`)
+                //check that the table has been entered in tables_1nf
+
                 //check field name 
                 let jindex = -1
                 for(fld of tbl.fields){
@@ -489,27 +527,59 @@ DB helper - ERD builder
             }
         }
 
+		    console.log("2NF")
         //2NF
         index = -1
         for(tbl of scenario2.normal_forms["2NF"].tables){
-            //console.log("CF 2nf scenario table = ",tbl)
+            //find the table if it is in the scenario 
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
-            console.log(`2NF Index of name ${tableName} = ${index}`)
+            console.log(`2NF Index of ${tableName} table = ${index}`)
             if(index > -1){
-                console.log(`${tableName} table found in 2nf`)
-                let jindex = -1
-                for(fld of tbl.fields){
-                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
-                    console.log(`fieldname index = ${jindex}`)
-                    if(jindex > -1){
-                        //Return true
-                        console.log(`adding ${fieldName} to ${tableName} in 2NF`)
-                    }
-                }
+                //console.log(`${tableName} table found in 2nf`)
+				
+				//check the table has been entered by the user 
+				for(tbl2 of tables_2nf){
+					//table has been entered by user 
+					if(tableName == tbl2.name){
+						console.log(`${tableName} is in 2nf tabls as ${tbl2.name}`)
+
+						//the user has the table correct, do they have the field name correct ? 
+						for(fld of tbl.fields){
+							let jindex = -1
+							jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+							console.log(`field > ${fieldName} index = ${jindex}`)
+							
+							if(jindex > -1){
+								//Return true
+								//check that the field isnt already taken 
+								console.log(`${fieldName} is in the acceptable names`)
+								console.log("tabl 2 = ",tbl2)
+								let tindex = -1
+								tindex = tbl2.fields.findIndex(tbl2fld => tbl2fld.fieldName.toLowerCase() == fieldName.toLowerCase())
+								if(tindex > -1){
+									console.log("Duplicate field name 2NF = ",fieldName )
+								}else{
+
+									let fieldObject = {
+										fieldName: fieldName,
+										fieldType: fieldType,
+										PK: PK,
+										FK: FK
+									}
+									tbl2.fields.push(fieldObject)
+								}
+	
+							}
+						}
+					}else{
+						console.log(`${tableName} is not `)
+					}
+				}
                 //return true
             }
         }
 
+		console.log("3NF checking ",fieldName)
         //3NF
         index = -1
         for(tbl of scenario2.normal_forms["3NF"].tables){
@@ -517,22 +587,105 @@ DB helper - ERD builder
             index = tbl.acceptable_names.findIndex(fname => fname.toLowerCase() == tableName.toLowerCase())
             //console.log("CF Index of name ",index)
             if(index > -1){
-                console.log(`${tableName} table found in 3nf`)
-                let jindex = -1
-                for(fld of tbl.fields){
+                //console.log(`${tableName} table found in 3nf`)
 
-                    jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
-                    console.log(`fieldname index = ${jindex}`)
-                    if(jindex > -1){
-                        
-                        //return true
-                        console.log(`adding ${fieldName} to ${tableName} in 3NF`)
-                    }
-                }
+				for(tbl2 of tables_3nf){
+
+					if(tableName == tbl2.name){
+
+						let jindex = -1
+						for(fld of tbl.fields){
+
+							jindex = fld.acceptable_names.findIndex(fname => fname.toLowerCase() == fieldName.toLowerCase())
+							console.log(`3NF fieldname ${fieldName} index = ${jindex}`)
+
+							if(jindex > -1){
+
+								let tindex = -1
+								tindex = tbl2.fields.findIndex(tbl2fld => tbl2fld.fieldName.toLowerCase() == fieldName.toLowerCase())
+								if(tindex > -1){
+									console.log("Duplicate field name 3NF = ",fieldName )
+								}else{
+
+									let fieldObject = {
+										fieldName: fieldName,
+										fieldType: fieldType,
+										PK: PK,
+										FK: FK
+									}
+									tbl2.fields.push(fieldObject)
+									console.log(`adding ${fieldName} to ${tableName} in 3NF`)
+								}
+								//return true
+							}
+						}
+					}
+				}
                 //return true
             }
         }
     }
+
+	//this function will add the table to the diagrams when a field that matches is entered 
+  //ust it when a field is added to the schema
+	function addTableFromField(fieldObject){
+		//loop over scenarios
+		for(tbl of scenario2.normal_forms["1NF"].tables){
+			//loop over the tables fields
+			let jindex = -1
+			for(fld of tbl.fields){
+				jindex = fld.acceptable_names.findIndex(fldName => fldName.toLowerCase() == fieldObject.fieldName.toLowerCase())
+				if(jindex > -1){
+					//add the field to the table diagram 
+					//add the table to the relevent diagram 
+					//need to check if the table already exists 
+				
+					let newTable = { name: name, fields: [] }
+          //just make it the first name 
+          newTable.name = tbl.acceptable_names[0]
+					newTable.fields.push(fieldObject)
+					tables_1nf.push(newTable)
+					//add the field ? 
+				}
+			}
+		}
+
+		for(tbl of scenario2.normal_forms["2NF"].tables){
+			//loop over the tables fields
+			let jindex = -1
+			for(fld of tbl.fields){
+				jindex = fld.acceptable_names.findIndex(fldName => fldName.toLowerCase() == fieldObject.fieldName.toLowerCase())
+				if(jindex > -1){
+					//add the field to the table diagram 
+					//add the table to the relevent diagram 
+          				
+					let newTable = { name: name, fields: [] }
+          newTable.name = tbl.acceptable_names[0]
+					newTable.fields.push(fieldObject)
+					tables_2nf.push(newTable)
+				}
+			}
+		}
+
+		for(tbl of scenario2.normal_forms["3NF"].tables){
+			//loop over the tables fields
+			let jindex = -1
+			for(fld of tbl.fields){
+				jindex = fld.acceptable_names.findIndex(fldName => fldName.toLowerCase() == fieldObject.fieldName.toLowerCase())
+				if(jindex > -1){
+					//add the field to the table diagram 
+					//add the table to the relevent diagram 
+          				
+					let newTable = { name: name, fields: [] }
+          //check that the name doesnt already exist ?? 
+          newTable.name = tbl.acceptable_names[0]
+					newTable.fields.push(fieldObject)
+					tables_3nf.push(newTable)
+				}
+			}
+		}
+
+	}
 
     var testButton = document.getElementById("test")
 
@@ -806,6 +959,9 @@ DB helper - ERD builder
                 t.fields.push(fieldObject)
             }
         }
+
+        //testing new version 
+        addTableFromField(fieldObject)
     }
 
     function updateFKSelectOptions(fieldId, name){
@@ -938,9 +1094,9 @@ DB helper - ERD builder
                 incramentUserScore()
             }
             //TESTING 
-            if(checkTableName2(tablename)){
+            //if(checkTableName2(tablename)){
 
-            }
+            //}
         }
         //tables need to be added before the fields 
 
@@ -953,6 +1109,9 @@ DB helper - ERD builder
             for(fld of tbl.fields){
 
                 var fieldName = fld.fieldName
+				var fieldType = fld.fieldType
+				var fieldPK = fld.PK
+				var fieldFK = fld.FK
                 
                 addFieldToTable(parentTable,fld.fieldName,fld.fieldType,fld.PK,fld.FK)
                 
@@ -966,8 +1125,13 @@ DB helper - ERD builder
                 }
 
                 //testing 2ndscenario
-                checkFieldName2(tableName,fieldName)
-
+                
+				//checkFieldName2(tableName,fieldName,fieldType,fieldPK,fieldFK)
+				//testing the tables
+			
+				console.log("1nf tables object = ",tables_1nf)
+				console.log("2nf tables object = ",tables_2nf)
+				console.log("3nf tables object = ",tables_3nf)
             }
         }
         //TODO :: set the selected table highlight 
